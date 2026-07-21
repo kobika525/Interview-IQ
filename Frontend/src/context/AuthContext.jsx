@@ -1,25 +1,27 @@
-import { createContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useState, useCallback } from 'react'
 import * as authService from '../services/authService'
 import { STORAGE_KEYS } from '../utils/constants'
 
+// This module intentionally exports the context together with its provider.
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext(null)
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
+function loadStoredUser() {
+  const stored = localStorage.getItem(STORAGE_KEYS.AUTH_USER)
+  const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
+  if (!stored || !token) return null
 
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEYS.AUTH_USER)
-    const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
-    if (stored && token) {
-      try {
-        setUser(JSON.parse(stored))
-      } catch {
-        localStorage.removeItem(STORAGE_KEYS.AUTH_USER)
-      }
-    }
-    setLoading(false)
-  }, [])
+  try {
+    return JSON.parse(stored)
+  } catch {
+    localStorage.removeItem(STORAGE_KEYS.AUTH_USER)
+    return null
+  }
+}
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(loadStoredUser)
+  const loading = false
 
   const login = useCallback(async (credentials) => {
     const { user: loggedInUser, token } = await authService.login(credentials)
