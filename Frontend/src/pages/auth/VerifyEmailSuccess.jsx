@@ -13,7 +13,7 @@ export default function VerifyEmailSuccess() {
       >
         <CheckCircle2 size={30} />
       </motion.div>
-      <h1 className="font-display font-bold text-2xl text-white">Email verified!</h1>
+      <h1 className="font-display font-bold text-2xl text-text-primary">Email verified!</h1>
       <p className="text-sm text-text-muted mt-2">Your account is active. Let&apos;s set up your profile so we can personalise your prep.</p>
       <Button className="mt-6" fullWidth onClick={() => navigate('/onboarding')}>Continue to onboarding</Button>
     </div>
