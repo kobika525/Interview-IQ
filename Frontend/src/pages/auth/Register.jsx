@@ -44,12 +44,12 @@ export default function Register() {
 
   return (
     <div>
-      <h1 className="font-display font-bold text-2xl md:text-3xl text-white">Create your account</h1>
+      <h1 className="font-display font-bold text-2xl md:text-3xl text-text-primary">Create your account</h1>
       <p className="text-sm text-text-muted mt-2">Takes about two minutes.</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-7 space-y-4" noValidate>
         <div className="grid sm:grid-cols-2 gap-4">
-          <Input label="Full name" icon={UserIcon} placeholder="Your name" error={errors.fullName?.message} {...register('fullName')} />
+          <Input label="Full name" icon={UserIcon} placeholder="Jane Doe" error={errors.fullName?.message} {...register('fullName')} />
           <Input label="Email address" icon={Mail} type="email" placeholder="you@email.com" error={errors.email?.message} {...register('email')} />
         </div>
         <div className="grid sm:grid-cols-2 gap-4">

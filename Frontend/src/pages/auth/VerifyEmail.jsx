@@ -34,7 +34,7 @@ export default function VerifyEmail() {
   return (
     <div className="text-center">
       <div className="w-14 h-14 rounded-2xl bg-blue/10 text-blue flex items-center justify-center mx-auto mb-5"><MailCheck size={26} /></div>
-      <h1 className="font-display font-bold text-2xl text-white">Verify your email</h1>
+      <h1 className="font-display font-bold text-2xl text-text-primary">Verify your email</h1>
       <p className="text-sm text-text-muted mt-2">
         We sent a verification link to <span className="text-text-secondary">{user?.email || 'your email address'}</span>. Click the link to activate your account.
       </p>
@@ -51,7 +51,7 @@ export default function VerifyEmail() {
           </button>
         )}
       </div>
-      <button className="text-xs text-text-muted hover:text-white mt-4">Change email address</button>
+      <button className="text-xs text-text-muted hover:text-text-primary mt-4">Change email address</button>
     </div>
   )
 }
