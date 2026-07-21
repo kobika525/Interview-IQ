@@ -1,12 +1,11 @@
 import { Link } from 'react-router-dom'
-import logoMark from '../../assets/logo/interview-iq-logo.png'
+
+const logoMark = '/favicon.svg'
 
 const SIZES = { sm: 30, md: 36, lg: 48 }
 
 /**
- * Interview IQ wordmark. The source logo is a black mark on a white
- * background (no transparency), so on dark surfaces it's placed inside a
- * light rounded chip per brand guidelines, rather than being altered.
+ * Interview IQ wordmark using the shared public brand mark.
  */
 export default function Logo({ size = 'md', withText = true, to = '/', textClassName = '' }) {
   const px = SIZES[size]
