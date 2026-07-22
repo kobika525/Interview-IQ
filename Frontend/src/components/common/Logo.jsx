@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import logoMark from '../../assets/logo/interview-iq-logo.png'
+import logoMark from '../../assets/vite.svg'
 
 const SIZES = { sm: 30, md: 36, lg: 48 }
 
