@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
-import { Mail, Phone as PhoneIcon, User as UserIcon } from 'lucide-react'
+import { Mail, User as UserIcon } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { registerSchema } from '../../utils/validators'
 import { JOB_ROLES, STUDY_LEVELS } from '../../utils/constants'
@@ -23,7 +23,7 @@ export default function Register() {
   const { register, control, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      fullName: '', email: '', phone: '', password: '', confirmPassword: '',
+      fullName: '', email: '', password: '', confirmPassword: '',
       degree: '', institute: '', studyLevel: '', targetCareer: '', terms: false,
     },
   })
@@ -52,8 +52,7 @@ export default function Register() {
           <Input label="Full name" icon={UserIcon} placeholder="Jane Doe" error={errors.fullName?.message} {...register('fullName')} />
           <Input label="Email address" icon={Mail} type="email" placeholder="you@email.com" error={errors.email?.message} {...register('email')} />
         </div>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <Input label="Phone number" icon={PhoneIcon} placeholder="+94 77 123 4567" error={errors.phone?.message} {...register('phone')} />
+        <div className="grid sm:grid-cols-1 gap-4">
           <Select label="Current study level" options={STUDY_LEVELS} error={errors.studyLevel?.message} {...register('studyLevel')} />
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
