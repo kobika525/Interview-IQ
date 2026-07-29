@@ -37,13 +37,16 @@ function pageTitle(pathname) {
 
 export default function AppLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
   const location = useLocation()
 
   return (
     <div className="min-h-screen bg-app text-text-primary flex">
-      {/* Desktop sidebar — compact icon-only rail */}
-      <aside className="hidden lg:block w-20 shrink-0 border-r border-border-subtle">
-        <div className="fixed w-20 h-screen"><Sidebar compact /></div>
+      {/* Desktop sidebar — collapsible rail */}
+      <aside className={`hidden lg:block ${collapsed ? 'w-20' : 'w-64'} shrink-0 border-r border-border-subtle`}>
+        <div className={`fixed ${collapsed ? 'w-20' : 'w-64'} h-screen`}>
+          <Sidebar compact={collapsed} />
+        </div>
       </aside>
 
       {/* Mobile drawer sidebar */}
@@ -68,7 +71,7 @@ export default function AppLayout() {
       </AnimatePresence>
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <TopNav title={pageTitle(location.pathname)} onMenuClick={() => setDrawerOpen(true)} />
+        <TopNav title={pageTitle(location.pathname)} onMenuClick={() => setDrawerOpen(true)} collapsed={collapsed} onCollapseClick={() => setCollapsed((c) => !c)} />
         <main className="flex-1 px-4 md:px-6 lg:px-8 py-6 max-w-[1400px] w-full mx-auto">
           <AnimatePresence mode="wait">
             <motion.div

@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Menu, Bell, Search, Zap, User, Settings, LifeBuoy, LogOut } from 'lucide-react'
+import { Menu, Bell, Search, Zap, User, Settings, LifeBuoy, LogOut, ChevronLeft, ChevronRight } from 'lucide-react'
 import Dropdown, { DropdownItem } from '../common/Dropdown'
 import NotificationDrawer from './NotificationDrawer'
 import { useAuth } from '../../hooks/useAuth'
 import * as notificationService from '../../services/notificationService'
+import ThemeToggle from '../common/ThemeToggle'
 
-export default function TopNav({ title, onMenuClick }) {
+export default function TopNav({ title, onMenuClick, collapsed, onCollapseClick }) {
   const { user, logout } = useAuth()
   const [notifOpen, setNotifOpen] = useState(false)
   const [unread, setUnread] = useState(0)
@@ -19,6 +20,11 @@ export default function TopNav({ title, onMenuClick }) {
     <>
       <header className="sticky top-0 z-30 flex items-center gap-3 px-4 md:px-6 h-16 bg-topnav/90 backdrop-blur-md border-b border-border-subtle">
         <button onClick={onMenuClick} className="btn-icon lg:hidden"><Menu size={20} /></button>
+        <div className="hidden lg:flex items-center gap-2 mr-2">
+          <button onClick={onCollapseClick} className="btn-icon" title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
+            {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
+        </div>
         <h2 className="font-display font-semibold text-text-primary text-base hidden sm:block">{title}</h2>
 
         <div className="flex-1 max-w-sm ml-auto hidden md:block">
@@ -36,6 +42,8 @@ export default function TopNav({ title, onMenuClick }) {
           <Bell size={18} />
           {unread > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-coral" />}
         </button>
+
+        <ThemeToggle />
 
         <Dropdown
           trigger={

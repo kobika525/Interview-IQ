@@ -3,8 +3,8 @@ import LoadingSpinner from './LoadingSpinner'
 
 const VARIANTS = {
   coral: 'btn-coral',
-  outline: 'btn-outline',
-  ghost: 'btn-ghost',
+  outline: 'btn-coral',
+  ghost: 'btn-coral',
 }
 
 export default function Button({

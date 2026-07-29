@@ -5,11 +5,11 @@ import Logo from '../components/common/Logo'
 
 export default function AuthLayout() {
   return (
-    <div className="min-h-screen bg-auth-bg flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
-      <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-auth-decor blur-3xl opacity-70" />
-      <div className="absolute -bottom-32 -right-16 w-96 h-96 rounded-full bg-auth-decor blur-3xl opacity-70" />
+    <div className="min-h-screen bg-blue-50 flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
+      <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-cyan-50 blur-3xl opacity-70" />
+      <div className="absolute -bottom-32 -right-16 w-96 h-96 rounded-full bg-blue-50 blur-3xl opacity-70" />
 
-      <div className="relative w-full max-w-[1100px] min-h-[650px] rounded-[28px] overflow-hidden shadow-[0_30px_80px_-20px_rgba(6,50,90,0.35)] bg-auth-dark flex flex-col md:flex-row">
+      <div className="relative w-full max-w-[1100px] min-h-[650px] rounded-[28px] overflow-hidden shadow-lg bg-white flex flex-col md:flex-row">
         {/* Mobile-only compact header */}
         <div className="md:hidden flex flex-col items-center pt-8 pb-2 px-6">
           <Logo size="sm" to={null} />
@@ -18,8 +18,10 @@ export default function AuthLayout() {
           </div>
         </div>
 
-        <div className="hidden md:block md:w-[48%]">
-          <AuthIllustration />
+        <div className="hidden md:block md:w-[48%] bg-gradient-to-br from-cyan-50 to-blue-50 flex items-center justify-center p-8">
+          <div className="max-w-[420px] w-full">
+            <AuthIllustration />
+          </div>
         </div>
 
         <div className="w-full md:w-[52%] p-6 sm:p-10 md:p-12 flex flex-col justify-center">

@@ -49,6 +49,40 @@
   --color-info: #38BDF8;
 }
 
+/* Theme transition helper (applied briefly when toggling) */
+.theme-transition * {
+  transition: background-color .28s ease, color .28s ease, border-color .28s ease, box-shadow .28s ease;
+}
+
+/* Dark theme overrides (simple, covers common variables) */
+.dark {
+  --color-app: #071126;
+  --color-app-2: #0b1530;
+  --color-sidebar: #06070a;
+  --color-topnav: #071126;
+
+  --color-card: #071226;
+  --color-card-2: #0a1220;
+  --color-card-elevated: #06121b;
+
+  --color-input: #0b1220;
+  --color-input-hover: #09121a;
+
+  --color-border: #0f1720;
+  --color-border-subtle: #0b1220;
+
+  --color-text-primary: #E6EEF8;
+  --color-text-secondary: #A8B4C8;
+  --color-text-muted: #8B98AB;
+  --color-text-disabled: #6D7A89;
+
+  --color-blue: #60A5FA;
+  --color-cyan: #34D4D0;
+  --color-blue-deep: #60A5FA;
+  --color-coral: #A3E635; /* lime-400 */
+  --color-coral-hover: #84CC16; /* lime-500 */
+}
+
 body {
   background: linear-gradient(135deg, #E4F9F1 0%, #EFEFFB 48%, #FBEAF2 100%);
   background-attachment: fixed;
@@ -59,8 +93,8 @@ body {
 @layer components {
   /* Buttons */
   .btn-coral {
-    @apply bg-coral text-white font-semibold rounded-xl px-5 py-3 transition-all duration-200
-    hover:bg-coral-hover hover:shadow-[0_0_24px_rgba(255,73,100,0.35)] hover:-translate-y-0.5
+    @apply bg-coral text-slate-950 font-semibold rounded-xl px-5 py-3 transition-all duration-200
+    hover:bg-coral-hover hover:shadow-[0_12px_30px_-18px_rgba(132,204,22,0.45)] hover:-translate-y-0.5
     active:translate-y-0 disabled:opacity-50 disabled:pointer-events-none;
   }
   .btn-outline {
