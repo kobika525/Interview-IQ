@@ -20,23 +20,23 @@ export default function PublicNavbar() {
   const { user } = useAuth()
 
   return (
-    <header className="sticky top-0 z-40 bg-app/85 backdrop-blur-md border-b border-border-subtle">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 h-16">
-        <Logo size="sm" to="/" />
+    <header className="sticky top-0 z-40 bg-slate-950 text-white border-b border-slate-800 shadow-[0_24px_80px_-52px_rgba(15,23,42,0.75)]">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 h-20">
+        <Logo size="sm" to="/" textClassName="text-white" />
 
-        <nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-text-secondary">
+        <nav className="hidden lg:flex items-center gap-8 text-sm font-medium text-white/75">
           {LINKS.map((l) => (
-            <NavLink key={l.label} to={l.to} className={({ isActive }) => isActive ? 'text-text-primary' : 'hover:text-text-primary transition-colors'}>
+            <NavLink key={l.label} to={l.to} className={({ isActive }) => isActive ? 'text-white' : 'hover:text-white transition-colors'}>
               {l.label}
             </NavLink>
           ))}
         </nav>
 
-        <div className="hidden md:flex items-center gap-3">
-          <Link to={user ? '/app/dashboard' : '/login'} className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">
+        <div className="hidden md:flex items-center gap-4">
+          <Link to={user ? '/app/dashboard' : '/login'} className="text-sm font-medium text-white/70 hover:text-white transition-colors">
             {user ? 'Dashboard' : 'Login'}
           </Link>
-          <Link to={user ? '/app/dashboard' : '/register'}><Button>Get Started</Button></Link>
+          <Link to={user ? '/app/dashboard' : '/register'}><Button className="bg-lime-400 text-slate-950 hover:bg-lime-300 shadow-[0_12px_30px_-18px_rgba(132,204,22,0.55)]">Get Started</Button></Link>
         </div>
 
         <button onClick={() => setOpen((o) => !o)} className="btn-icon md:hidden" aria-label="Menu">
@@ -45,15 +45,15 @@ export default function PublicNavbar() {
       </div>
 
       {open && (
-        <div className="md:hidden border-t border-border-subtle px-4 py-4 space-y-3">
+        <div className="md:hidden border-t border-slate-800 bg-slate-950/95 px-4 py-4 space-y-3">
           {LINKS.map((l) => (
-            <Link key={l.label} to={l.to} onClick={() => setOpen(false)} className="block text-sm text-text-secondary py-1.5">
+            <Link key={l.label} to={l.to} onClick={() => setOpen(false)} className="block text-sm text-white/80 py-1.5 hover:text-white">
               {l.label}
             </Link>
           ))}
           <div className="flex gap-3 pt-2">
-            <Link to="/login" className="flex-1"><Button variant="outline" fullWidth>Login</Button></Link>
-            <Link to="/register" className="flex-1"><Button fullWidth>Get Started</Button></Link>
+            <Link to="/login" className="flex-1"><Button variant="outline" fullWidth className="border-white/30 text-white hover:border-white hover:text-white">Login</Button></Link>
+            <Link to="/register" className="flex-1"><Button fullWidth className="bg-lime-400 text-slate-950 hover:bg-lime-300">Get Started</Button></Link>
           </div>
         </div>
       )}
