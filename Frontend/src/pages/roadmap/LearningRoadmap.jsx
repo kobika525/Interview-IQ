@@ -9,6 +9,7 @@ import CircularProgress from '../../components/common/CircularProgress'
 import SkeletonLoader from '../../components/common/SkeletonLoader'
 import * as resourceService from '../../services/resourceService'
 import { cx } from '../../utils/helpers'
+import toast from 'react-hot-toast'
 
 export default function LearningRoadmap() {
   const [roadmap, setRoadmap] = useState(null)
@@ -18,7 +19,19 @@ export default function LearningRoadmap() {
 
   if (!roadmap) return <SkeletonLoader rows={5} />
 
-  function toggleTask(id) { setTasksDone((t) => ({ ...t, [id]: !t[id] })) }
+  async function toggleTask(task) {
+    const completed = !(task.done || tasksDone[task.id])
+    setTasksDone((state) => ({ ...state, [task.id]: completed }))
+    try {
+      await resourceService.setRoadmapItemCompleted(roadmap.id, task.id, completed)
+      const refreshed = await resourceService.getRoadmap()
+      setRoadmap(refreshed)
+      setTasksDone({})
+    } catch (error) {
+      setTasksDone((state) => ({ ...state, [task.id]: !completed }))
+      toast.error(error.message)
+    }
+  }
 
   return (
     <div>
@@ -53,7 +66,7 @@ export default function LearningRoadmap() {
                   const done = task.done || tasksDone[task.id]
                   return (
                     <li key={task.id} className="flex items-center gap-2.5 text-sm">
-                      <button onClick={() => stage.status !== 'locked' && toggleTask(task.id)} disabled={stage.status === 'locked'}>
+                      <button onClick={() => stage.status !== 'locked' && toggleTask(task)} disabled={stage.status === 'locked'}>
                         {done ? <CheckCircle2 size={16} className="text-success" /> : <Circle size={16} className="text-text-muted" />}
                       </button>
                       <span className={done ? 'text-text-secondary line-through decoration-text-disabled' : 'text-text-secondary'}>{task.title}</span>

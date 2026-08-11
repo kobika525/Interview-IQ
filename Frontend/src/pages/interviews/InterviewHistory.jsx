@@ -39,10 +39,11 @@ export default function InterviewHistory() {
     { key: 'date', header: 'Date', render: (r) => formatDate(r.date) },
     { key: 'duration', header: 'Duration' },
     { key: 'score', header: 'Score', render: (r) => <Badge tone={scoreTone(r.score) === 'success' ? 'success' : scoreTone(r.score) === 'warning' ? 'warning' : 'error'}>{r.score}</Badge> },
+    { key: 'visualPresentationScore', header: 'Visual presentation', render: (r) => r.mode === 'VIDEO' ? (r.visualPresentationScore != null ? `${r.visualPresentationScore}/100` : 'Unavailable') : '—' },
     {
       key: 'actions', header: '', render: (r) => (
         <div className="flex gap-1.5">
-          <Link to={`/app/interviews/report/${r.id}`}><button className="btn-icon" aria-label="View report"><Eye size={15} /></button></Link>
+          {r.hasReport && <Link to={`/app/interviews/report/${r.id}`}><button className="btn-icon" aria-label="View report"><Eye size={15} /></button></Link>}
           <Link to="/app/interviews/setup"><button className="btn-icon" aria-label="Retake"><RotateCcw size={15} /></button></Link>
           <button className="btn-icon" aria-label="Download"><Download size={15} /></button>
           <button className="btn-icon" aria-label="Delete" onClick={() => setToDelete(r)}><Trash2 size={15} /></button>
@@ -75,7 +76,7 @@ export default function InterviewHistory() {
               </div>
               <p className="text-xs text-text-muted mt-1 capitalize">{r.type} · {r.mode} · {r.difficulty} · {formatDate(r.date)}</p>
               <div className="flex gap-2 mt-3">
-                <Link to={`/app/interviews/report/${r.id}`} className="flex-1"><Button variant="outline" fullWidth className="!text-xs !py-1.5">View report</Button></Link>
+                {r.hasReport && <Link to={`/app/interviews/report/${r.id}`} className="flex-1"><Button variant="outline" fullWidth className="!text-xs !py-1.5">View report</Button></Link>}
                 <Button variant="ghost" className="!text-xs !py-1.5" onClick={() => setToDelete(r)}><Trash2 size={13} /></Button>
               </div>
             </Card>

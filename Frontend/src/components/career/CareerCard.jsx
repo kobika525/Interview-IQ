@@ -6,20 +6,31 @@ import SkillTag from '../common/SkillTag'
 import Badge from '../common/Badge'
 import Button from '../common/Button'
 
-export default function CareerCard({ career }) {
+export default function CareerCard({ career, compared = false, onToggleCompare }) {
   return (
     <Card hover>
       <div className="flex items-start justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <h3 className="font-display font-semibold text-lg text-text-primary">{career.title}</h3>
           <p className="text-sm text-text-muted mt-1">{career.summary}</p>
         </div>
-        <CircularProgress value={career.match} size={64} strokeWidth={6} label="match" />
+        <div className="shrink-0 flex flex-col items-center gap-2">
+          <label className="flex items-center gap-1.5 text-[11px] text-text-muted cursor-pointer whitespace-nowrap">
+            <input
+              type="checkbox"
+              checked={compared}
+              onChange={onToggleCompare}
+              className="accent-blue"
+            />
+            Compare
+          </label>
+          <CircularProgress value={career.match} size={64} strokeWidth={6} label="match" />
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-1.5 mt-4">
-        {career.matchedSkills.map((s) => <SkillTag key={s} tone="matched">{s}</SkillTag>)}
-        {career.missingSkills.map((s) => <SkillTag key={s} tone="missing">{s}</SkillTag>)}
+        {(career.matchedSkills || []).map((s) => <SkillTag key={s} tone="matched">{s}</SkillTag>)}
+        {(career.missingSkills || []).map((s) => <SkillTag key={s} tone="missing">{s}</SkillTag>)}
       </div>
 
       <div className="flex items-center gap-3 mt-4 text-xs text-text-muted">

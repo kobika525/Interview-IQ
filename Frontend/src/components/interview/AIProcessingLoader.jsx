@@ -16,7 +16,7 @@ export default function AIProcessingLoader({ steps, activeIndex }) {
           <li key={step} className="flex items-center gap-3">
             <span
               className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold ${
-                i < activeIndex ? 'bg-success text-white' : i === activeIndex ? 'bg-blue text-white animate-pulse' : 'bg-black/[0.045] text-text-muted'
+                i < activeIndex ? 'bg-success text-white' : i === activeIndex ? 'bg-blue text-black animate-pulse' : 'bg-white/[0.055] text-text-muted'
               }`}
             >
               {i < activeIndex ? <Check size={12} /> : i + 1}

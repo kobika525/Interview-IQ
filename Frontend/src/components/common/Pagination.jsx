@@ -16,7 +16,7 @@ export default function Pagination({ page, totalPages, onChange }) {
           onClick={() => onChange(p)}
           className={cx(
             'w-9 h-9 rounded-lg text-sm font-medium transition-colors',
-            p === page ? 'bg-blue text-white' : 'text-text-muted hover:bg-black/[0.045]'
+            p === page ? 'bg-blue text-black' : 'text-text-muted hover:bg-white/[0.055]'
           )}
         >
           {p}

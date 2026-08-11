@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useParams, useLocation, useNavigate } from 'react-router-dom'
-import toast from 'react-hot-toast'
 import { LogOut, HelpCircle, ChevronLeft, ChevronRight } from 'lucide-react'
 import QuestionCard from '../../components/interview/QuestionCard'
 import QuestionNavigator from '../../components/interview/QuestionNavigator'
@@ -10,24 +9,35 @@ import Card from '../../components/common/Card'
 import ProgressBar from '../../components/common/ProgressBar'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import * as interviewService from '../../services/interviewService'
-import { getRandomQuestions } from '../../data/interviewQuestions'
+import { useInterviewSession } from '../../hooks/useInterviewSession'
+import SkeletonLoader from '../../components/common/SkeletonLoader'
+import ErrorState from '../../components/common/ErrorState'
+import toast from 'react-hot-toast'
 
 export default function TextInterview() {
   const { id } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
-  const [questions] = useState(() => location.state?.session?.questions || getRandomQuestions(5))
+  const { questions, loading, error, reload } = useInterviewSession(id, location.state?.session)
   const [answers, setAnswers] = useState({})
   const [current, setCurrent] = useState(0)
   const [flagged, setFlagged] = useState([])
   const [exitOpen, setExitOpen] = useState(false)
   const [submitOpen, setSubmitOpen] = useState(false)
   const [seconds, setSeconds] = useState(0)
+  const [submitting, setSubmitting] = useState(false)
+  const [submittedOrders, setSubmittedOrders] = useState(new Set())
 
   useEffect(() => {
     const t = setInterval(() => setSeconds((s) => s + 1), 1000)
     return () => clearInterval(t)
   }, [])
+
+  useEffect(() => {
+    const next = questions.findIndex((question) => !question.isAnswered && !question.isSkipped)
+    if (next >= 0) setCurrent(next)
+    setSubmittedOrders(new Set(questions.filter((question) => question.isAnswered).map((question) => question.orderNumber)))
+  }, [questions])
 
   const answered = Object.keys(answers).filter((k) => answers[k]?.trim()).map(Number)
   const progressPct = Math.round((answered.length / questions.length) * 100)
@@ -38,12 +48,32 @@ export default function TextInterview() {
 
   async function submit() {
     setSubmitOpen(false)
-    await interviewService.submitInterview(id)
-    navigate(`/app/interviews/processing/${id}`)
+    if (submitting) return
+    setSubmitting(true)
+    try {
+      for (let index = 0; index < questions.length; index += 1) {
+        const text = answers[index]?.trim()
+        const order = questions[index].orderNumber || index + 1
+        if (text && !submittedOrders.has(order) && !questions[index].isAnswered) {
+          await interviewService.submitAnswer(id, order, text)
+          setSubmittedOrders((orders) => new Set(orders).add(order))
+        }
+      }
+      await interviewService.submitInterview(id)
+      navigate(`/app/interviews/processing/${id}`)
+    } catch (submitError) {
+      toast.error(submitError.message || 'Unable to submit this interview. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const mm = String(Math.floor(seconds / 60)).padStart(2, '0')
   const ss = String(seconds % 60).padStart(2, '0')
+
+  if (loading && questions.length === 0) return <SkeletonLoader rows={4} />
+  if (error && questions.length === 0) return <ErrorState title="Unable to load interview" message={error.message} onRetry={reload} />
+  if (questions.length === 0) return <ErrorState title="No interview questions" message="This session has no saved questions." onRetry={reload} />
 
   return (
     <div>
@@ -53,7 +83,7 @@ export default function TextInterview() {
           <p className="text-xs text-text-muted mt-0.5">Question {current + 1} of {questions.length} · {mm}:{ss} elapsed</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="badge bg-black/[0.045] text-text-secondary">{progressPct}% complete</span>
+          <span className="badge bg-white/[0.055] text-text-secondary">{progressPct}% complete</span>
           <Button variant="ghost" icon={LogOut} onClick={() => setExitOpen(true)}>Exit</Button>
         </div>
       </div>
@@ -77,7 +107,7 @@ export default function TextInterview() {
               {current < questions.length - 1 ? (
                 <Button icon={ChevronRight} onClick={() => setCurrent((c) => c + 1)}>Next question</Button>
               ) : (
-                <Button onClick={() => setSubmitOpen(true)}>Submit interview</Button>
+                <Button loading={submitting} disabled={submitting} onClick={() => setSubmitOpen(true)}>Submit interview</Button>
               )}
             </div>
           </Card>

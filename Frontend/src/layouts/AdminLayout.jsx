@@ -15,7 +15,7 @@ export default function AdminLayout() {
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
           <div className="relative w-72 h-full">
-            <button onClick={() => setOpen(false)} className="btn-icon absolute top-4 right-3 z-10"><X size={18} /></button>
+            <button onClick={() => setOpen(false)} className="btn-icon absolute top-4 right-3 z-10" aria-label="Close admin navigation"><X size={18} /></button>
             <AdminSidebar />
           </div>
         </div>
@@ -23,7 +23,7 @@ export default function AdminLayout() {
 
       <div className="flex-1 min-w-0">
         <header className="sticky top-0 z-30 flex items-center gap-3 px-4 md:px-6 h-16 bg-topnav/90 backdrop-blur-md border-b border-border-subtle">
-          <button onClick={() => setOpen(true)} className="btn-icon lg:hidden"><Menu size={20} /></button>
+          <button onClick={() => setOpen(true)} className="btn-icon lg:hidden" aria-label="Open admin navigation"><Menu size={20} /></button>
           <h2 className="font-display font-semibold text-text-primary">Admin Console</h2>
         </header>
         <main className="px-4 md:px-6 lg:px-8 py-6 max-w-[1400px] mx-auto">

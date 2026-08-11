@@ -1,7 +1,7 @@
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts'
 import ChartCard from '../common/ChartCard'
 
-export default function BarChartCard({ title, subtitle, data, dataKey = 'value', nameKey = 'name', height = 260, color = '#1EA7FF' }) {
+export default function BarChartCard({ title, subtitle, data, dataKey = 'value', nameKey = 'name', height = 260, color = '#B6FF3B' }) {
   return (
     <ChartCard title={title} subtitle={subtitle}>
       <ResponsiveContainer width="100%" height={height}>

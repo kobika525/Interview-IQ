@@ -238,12 +238,13 @@ export const PLANS = [
       'Skill gap analysis',
       '1 saved report',
     ],
-    limits: { resumeScans: 3, videoInterviews: false, reportHistory: 1 },
+    limits: { resumeScans: 3, videoInterviews: 2, reportHistory: 1 },
   },
   {
-    id: 'premium',
-    name: 'Premium',
-    price: 9,
+    id: 'basic',
+    name: 'Basic',
+    price: 990,
+    annualPrice: 9900,
     period: 'month',
     tagline: 'Full interview prep, unlocked.',
     highlight: true,
@@ -260,11 +261,12 @@ export const PLANS = [
   {
     id: 'pro',
     name: 'Pro',
-    price: 19,
+    price: 1990,
+    annualPrice: 19900,
     period: 'month',
     tagline: 'For serious, fast-track preparation.',
     features: [
-      'Everything in Premium',
+      'Everything in Basic',
       'Unlimited video interviews with detailed delivery analysis',
       'Personalised weekly coaching roadmap',
       'Early access to new interview modes',
@@ -275,9 +277,9 @@ export const PLANS = [
 ]
 
 export const INVOICES = [
-  { id: 'inv_1003', date: '2026-07-01', plan: 'Premium', amount: 9, status: 'Paid' },
-  { id: 'inv_1002', date: '2026-06-01', plan: 'Premium', amount: 9, status: 'Paid' },
-  { id: 'inv_1001', date: '2026-05-01', plan: 'Premium', amount: 9, status: 'Paid' },
+  { id: 'inv_1003', date: '2026-07-01', plan: 'Basic', amount: 990, status: 'Paid' },
+  { id: 'inv_1002', date: '2026-06-01', plan: 'Basic', amount: 990, status: 'Paid' },
+  { id: 'inv_1001', date: '2026-05-01', plan: 'Basic', amount: 990, status: 'Paid' },
 ]
 
 export const ADMIN_RESOURCES = [

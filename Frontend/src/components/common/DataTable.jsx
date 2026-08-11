@@ -19,7 +19,7 @@ export default function DataTable({ columns, data, renderMobileCard, emptyMessag
           </thead>
           <tbody>
             {data.map((row, i) => (
-              <tr key={row.id ?? i} className="border-b border-border-subtle last:border-0 hover:bg-black/[0.025] transition-colors">
+              <tr key={row.id ?? i} className="border-b border-border-subtle last:border-0 hover:bg-white/[0.025] transition-colors">
                 {columns.map((col) => (
                   <td key={col.key} className="px-4 py-3.5 text-text-secondary">
                     {col.render ? col.render(row) : row[col.key]}

@@ -3,7 +3,6 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import { Mic, Square, RotateCcw, LogOut, AlertTriangle } from 'lucide-react'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
-import Badge from '../../components/common/Badge'
 import ProgressBar from '../../components/common/ProgressBar'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import QuestionCard from '../../components/interview/QuestionCard'
@@ -11,30 +10,38 @@ import WaveformVisualizer from '../../components/interview/WaveformVisualizer'
 import { useMicrophonePermission } from '../../hooks/useMicrophonePermission'
 import { useMediaRecorder } from '../../hooks/useMediaRecorder'
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition'
-import { getRandomQuestions } from '../../data/interviewQuestions'
+import { useInterviewSession } from '../../hooks/useInterviewSession'
+import SkeletonLoader from '../../components/common/SkeletonLoader'
+import ErrorState from '../../components/common/ErrorState'
 import { formatDuration } from '../../utils/formatters'
 import * as interviewService from '../../services/interviewService'
+import toast from 'react-hot-toast'
 
 export default function VoiceInterview() {
   const { id } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
-  const [questions] = useState(() => location.state?.session?.questions || getRandomQuestions(5))
+  const { questions, loading, error, reload } = useInterviewSession(id, location.state?.session)
   const [current, setCurrent] = useState(0)
   const [exitOpen, setExitOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
 
   const mic = useMicrophonePermission()
   const recorder = useMediaRecorder(mic.stream)
   const speech = useSpeechRecognition()
 
   useEffect(() => { mic.request() }, []) // eslint-disable-line
+  useEffect(() => {
+    const next = questions.findIndex((question) => !question.isAnswered && !question.isSkipped)
+    if (next >= 0) setCurrent(next)
+  }, [questions])
 
   function startRecording() {
     recorder.start()
     if (speech.supported) speech.start()
   }
-  function stopRecording() {
-    recorder.stop()
+  async function stopRecording() {
+    await recorder.stop()
     speech.stop()
   }
   function reRecord() {
@@ -43,15 +50,39 @@ export default function VoiceInterview() {
   }
 
   async function nextOrSubmit() {
-    stopRecording()
-    if (current < questions.length - 1) {
-      setCurrent((c) => c + 1)
-      reRecord()
-    } else {
-      await interviewService.submitInterview(id)
-      navigate(`/app/interviews/processing/${id}`)
+    setSubmitting(true)
+    try {
+      const recordedBlob = recorder.recording ? await recorder.stop() : recorder.blob
+      speech.stop()
+      if (!recordedBlob || recordedBlob.size === 0) {
+        toast.error('Record your answer before continuing.')
+        return
+      }
+      if (recorder.seconds < 2) {
+        toast.error('Please record for at least 2 seconds before submitting.')
+        return
+      }
+      // The live browser transcript is preview-only. Gemini creates the
+      // official transcript from the uploaded recording on the backend.
+      await interviewService.submitAudioAnswer(id, current + 1, recordedBlob)
+      if (current < questions.length - 1) {
+        setCurrent((question) => question + 1)
+        reRecord()
+        toast.success('Answer submitted')
+      } else {
+        await interviewService.submitInterview(id)
+        navigate(`/app/interviews/processing/${id}`)
+      }
+    } catch (error) {
+      toast.error(error.message || 'Unable to extract and submit your audio.')
+    } finally {
+      setSubmitting(false)
     }
   }
+
+  if (loading && questions.length === 0) return <SkeletonLoader rows={4} />
+  if (error && questions.length === 0) return <ErrorState title="Unable to load interview" message={error.message} onRetry={reload} />
+  if (questions.length === 0) return <ErrorState title="No interview questions" message="This session has no saved questions." onRetry={reload} />
 
   return (
     <div>
@@ -80,7 +111,7 @@ export default function VoiceInterview() {
       <QuestionCard question={questions[current]} index={current} total={questions.length} />
 
       <Card className="mt-5 text-center py-8">
-        <div className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center transition-colors ${recorder.recording ? 'bg-cyan/15 animate-pulse-glow' : 'bg-black/[0.045]'}`}>
+        <div className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center transition-colors ${recorder.recording ? 'bg-cyan/15 animate-pulse-glow' : 'bg-white/[0.055]'}`}>
           <Mic size={30} className={recorder.recording ? 'text-cyan' : 'text-text-muted'} />
         </div>
         <p className="font-mono text-sm text-text-secondary mt-3">{formatDuration(recorder.seconds)}</p>
@@ -110,8 +141,8 @@ export default function VoiceInterview() {
       )}
 
       <div className="flex justify-between mt-5">
-        <Button variant="ghost" disabled={current === 0} onClick={() => { setCurrent((c) => c - 1); reRecord() }}>Previous</Button>
-        <Button onClick={nextOrSubmit}>{current < questions.length - 1 ? 'Submit answer & next' : 'Submit interview'}</Button>
+        <Button variant="ghost" disabled={current === 0 || questions[current - 1]?.isAnswered} onClick={() => { setCurrent((c) => c - 1); reRecord() }}>Previous</Button>
+        <Button loading={submitting} disabled={submitting} onClick={nextOrSubmit}>{current < questions.length - 1 ? 'Submit answer & next' : 'Submit interview'}</Button>
       </div>
 
       <ConfirmDialog open={exitOpen} onClose={() => setExitOpen(false)} onConfirm={() => navigate('/app/interviews')} title="Exit interview?" message="Your progress on this session will be lost." confirmLabel="Exit" />

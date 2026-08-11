@@ -21,8 +21,9 @@ export const STUDY_LEVELS = ['Undergraduate', 'Final Year', 'Graduate', 'Postgra
 
 export const STORAGE_KEYS = {
   AUTH_TOKEN: 'interviewiq_token',
+  REFRESH_TOKEN: 'interviewiq_refresh_token',
   AUTH_USER: 'interviewiq_user',
 }
 
-export const PLAN_IDS = { FREE: 'free', PREMIUM: 'premium', PRO: 'pro' }
+export const PLAN_IDS = { FREE: 'free', BASIC: 'basic', PREMIUM: 'premium', PRO: 'pro' }
 export const FREE_RESUME_SCAN_LIMIT = 3

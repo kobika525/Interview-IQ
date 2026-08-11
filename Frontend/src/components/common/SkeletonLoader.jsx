@@ -1,7 +1,7 @@
 import { cx } from '../../utils/helpers'
 
 export function Skeleton({ className = '' }) {
-  return <div className={cx('animate-pulse rounded-lg bg-black/[0.045]', className)} />
+  return <div className={cx('animate-pulse rounded-lg bg-white/[0.055]', className)} />
 }
 
 export default function SkeletonLoader({ rows = 3 }) {

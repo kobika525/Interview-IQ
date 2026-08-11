@@ -42,8 +42,10 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen bg-app text-text-primary flex">
       {/* Desktop sidebar — compact icon-only rail */}
-      <aside className="hidden lg:block w-20 shrink-0 border-r border-border-subtle">
-        <div className="fixed w-20 h-screen"><Sidebar compact /></div>
+      <aside className="hidden w-72 shrink-0 border-r border-border-subtle lg:block">
+        <div className="fixed h-screen w-72">
+          <Sidebar />
+        </div>
       </aside>
 
       {/* Mobile drawer sidebar */}
@@ -59,8 +61,8 @@ export default function AppLayout() {
               className="fixed inset-y-0 left-0 z-50 w-72 lg:hidden"
             >
               <div className="relative h-full">
-                <button onClick={() => setDrawerOpen(false)} className="btn-icon absolute top-4 right-3 z-10"><X size={18} /></button>
-                <Sidebar onNavigate={() => setDrawerOpen(false)} />
+                <button onClick={() => setDrawerOpen(false)} className="btn-icon absolute top-4 right-3 z-10" aria-label="Close navigation menu"><X size={18} /></button>
+                <Sidebar mobile onNavigate={() => setDrawerOpen(false)} />
               </div>
             </motion.aside>
           </>

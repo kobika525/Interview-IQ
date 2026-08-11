@@ -8,10 +8,14 @@ import Card from '../../components/common/Card'
 import Badge from '../../components/common/Badge'
 import Pagination from '../../components/common/Pagination'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
+import Modal from '../../components/common/Modal'
+import Input from '../../components/common/Input'
+import Button from '../../components/common/Button'
 import EmptyState from '../../components/common/EmptyState'
 import SkeletonLoader from '../../components/common/SkeletonLoader'
 import * as adminService from '../../services/adminService'
 import { formatDate } from '../../utils/formatters'
+import toast from 'react-hot-toast'
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([])
@@ -20,23 +24,65 @@ export default function AdminUsers() {
   const [status, setStatus] = useState('')
   const [page, setPage] = useState(1)
   const [confirmAction, setConfirmAction] = useState(null)
+  const [editing, setEditing] = useState(null)
+  const [editForm, setEditForm] = useState({ fullName: '', role: 'USER' })
+  const [saving, setSaving] = useState(false)
   const pageSize = 5
 
-  useEffect(() => { adminService.getAdminUsers().then((d) => { setUsers(d); setLoading(false) }) }, [])
+  useEffect(() => {
+    adminService.getAdminUsers()
+      .then(setUsers)
+      .catch((error) => toast.error(error.message))
+      .finally(() => setLoading(false))
+  }, [])
 
-  const filtered = users.filter((u) => u.name.toLowerCase().includes(search.toLowerCase()) && (!status || u.status === status))
+  const filtered = users.filter((u) => (u.name || '').toLowerCase().includes(search.toLowerCase()) && (!status || u.status === status))
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
   const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize)
 
-  function applyAction() {
-    setUsers((prev) => prev.map((u) => {
-      if (u.id !== confirmAction.user.id) return u
-      if (confirmAction.type === 'activate') return { ...u, status: 'Active' }
-      if (confirmAction.type === 'deactivate') return { ...u, status: 'Inactive' }
-      return u
-    }))
-    if (confirmAction.type === 'delete') setUsers((prev) => prev.filter((u) => u.id !== confirmAction.user.id))
-    setConfirmAction(null)
+  async function applyAction() {
+    const action = confirmAction
+    try {
+      if (action.type === 'delete') {
+        await adminService.deleteAdminUser(action.user.id)
+        setUsers((prev) => prev.filter((u) => u.id !== action.user.id))
+        toast.success('User deleted')
+      } else {
+        const accountStatus = action.type === 'activate' ? 'ACTIVE' : 'DISABLED'
+        const updated = await adminService.updateAdminUserStatus(action.user.id, accountStatus)
+        setUsers((prev) => prev.map((user) => user.id === updated.id ? { ...user, ...updated } : user))
+        toast.success(action.type === 'activate' ? 'User activated' : 'User deactivated')
+      }
+      setConfirmAction(null)
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
+
+  function openEdit(user) {
+    setEditing(user)
+    setEditForm({ fullName: user.name || '', role: user.role || 'USER' })
+  }
+
+  async function saveUser() {
+    if (!editForm.fullName.trim()) {
+      toast.error('Full name is required')
+      return
+    }
+    setSaving(true)
+    try {
+      const updated = await adminService.updateAdminUser(editing.id, {
+        fullName: editForm.fullName.trim(),
+        role: editForm.role,
+      })
+      setUsers((prev) => prev.map((user) => user.id === updated.id ? { ...user, ...updated } : user))
+      setEditing(null)
+      toast.success('User updated')
+    } catch (error) {
+      toast.error(error.message)
+    } finally {
+      setSaving(false)
+    }
   }
 
   const columns = [
@@ -50,7 +96,7 @@ export default function AdminUsers() {
       key: 'actions', header: '', render: (u) => (
         <div className="flex gap-1.5">
           <button className="btn-icon" aria-label="View"><Eye size={15} /></button>
-          <button className="btn-icon" aria-label="Edit"><Pencil size={15} /></button>
+          <button className="btn-icon" aria-label="Edit" onClick={() => openEdit(u)}><Pencil size={15} /></button>
           {u.status === 'Active' ? (
             <button className="btn-icon" aria-label="Deactivate" onClick={() => setConfirmAction({ type: 'deactivate', user: u })}><Ban size={15} /></button>
           ) : (
@@ -90,6 +136,29 @@ export default function AdminUsers() {
         message={`This will ${confirmAction?.type} ${confirmAction?.user?.name}.`}
         confirmLabel={confirmAction?.type === 'delete' ? 'Delete' : 'Confirm'}
       />
+      <Modal
+        open={Boolean(editing)}
+        onClose={() => setEditing(null)}
+        title="Edit user"
+        size="sm"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setEditing(null)}>Cancel</Button>
+            <Button loading={saving} onClick={saveUser}>Save changes</Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Input label="Full name" value={editForm.fullName} onChange={(event) => setEditForm((form) => ({ ...form, fullName: event.target.value }))} />
+          <Input label="Email" value={editing?.email || ''} disabled title="Email cannot be changed from the admin panel" />
+          <Select
+            label="Role"
+            options={[{ value: 'USER', label: 'User' }, { value: 'ADMIN', label: 'Admin' }]}
+            value={editForm.role}
+            onChange={(event) => setEditForm((form) => ({ ...form, role: event.target.value }))}
+          />
+        </div>
+      </Modal>
     </div>
   )
 }

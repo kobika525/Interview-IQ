@@ -9,9 +9,13 @@ import ConfirmDialog from '../../components/common/ConfirmDialog'
 import QuestionNavigator from '../../components/interview/QuestionNavigator'
 import { useCameraPermission } from '../../hooks/useCameraPermission'
 import { useMediaRecorder } from '../../hooks/useMediaRecorder'
-import { getRandomQuestions } from '../../data/interviewQuestions'
+import { useInterviewSession } from '../../hooks/useInterviewSession'
+import SkeletonLoader from '../../components/common/SkeletonLoader'
+import ErrorState from '../../components/common/ErrorState'
 import { formatDuration } from '../../utils/formatters'
 import * as interviewService from '../../services/interviewService'
+import toast from 'react-hot-toast'
+import { useSpeechRecognition } from '../../hooks/useSpeechRecognition'
 
 const CHECKLIST = ['Face clearly visible', 'Good lighting on your face', 'Quiet background', 'Camera at eye level']
 
@@ -19,18 +23,28 @@ export default function VideoInterview() {
   const { id } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
-  const [questions] = useState(() => location.state?.session?.questions || getRandomQuestions(5))
+  const { questions, loading, error, reload } = useInterviewSession(id, location.state?.session)
   const [current, setCurrent] = useState(0)
   const [answered, setAnswered] = useState([])
   const [camOn, setCamOn] = useState(true)
   const [micOn, setMicOn] = useState(true)
   const [exitOpen, setExitOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const videoRef = useRef(null)
 
   const camera = useCameraPermission()
   const recorder = useMediaRecorder(camera.stream)
+  const speech = useSpeechRecognition()
 
   useEffect(() => { camera.request() }, [] ) // eslint-disable-line
+  useEffect(() => {
+    const savedAnswered = questions
+      .map((question, index) => question.isAnswered ? index : null)
+      .filter((index) => index !== null)
+    setAnswered(savedAnswered)
+    const next = questions.findIndex((question) => !question.isAnswered && !question.isSkipped)
+    if (next >= 0) setCurrent(next)
+  }, [questions])
   useEffect(() => {
     if (videoRef.current && camera.stream) videoRef.current.srcObject = camera.stream
   }, [camera.stream])
@@ -44,17 +58,49 @@ export default function VideoInterview() {
     setMicOn((v) => !v)
   }
 
+  function startRecording() {
+    if (!camera.stream?.getAudioTracks().length) {
+      toast.error('No microphone track is available. Allow microphone access and reload the page.')
+      return
+    }
+    recorder.start()
+    if (speech.supported) speech.start()
+  }
+
   async function nextOrSubmit() {
-    if (recorder.recording) recorder.stop()
-    setAnswered((a) => [...new Set([...a, current])])
-    if (current < questions.length - 1) {
-      setCurrent((c) => c + 1)
-      recorder.reset()
-    } else {
-      await interviewService.submitInterview(id)
-      navigate(`/app/interviews/processing/${id}`)
+    setSubmitting(true)
+    try {
+      const recordedBlob = recorder.recording ? await recorder.stop() : recorder.blob
+      speech.stop()
+      if (!recordedBlob || recordedBlob.size === 0) {
+        toast.error('Record your answer before continuing.')
+        return
+      }
+      if (recorder.seconds < 2) {
+        toast.error('Please record for at least 2 seconds before submitting.')
+        return
+      }
+      await interviewService.submitVideoAnswer(id, current + 1, recordedBlob, speech.transcript)
+      setAnswered((answers) => [...new Set([...answers, current])])
+      if (current < questions.length - 1) {
+        setCurrent((question) => question + 1)
+        recorder.reset()
+        speech.reset()
+        toast.success('Answer submitted')
+      } else {
+        await interviewService.submitInterview(id)
+        navigate(`/app/interviews/processing/${id}`)
+      }
+    } catch (error) {
+      toast.error(error.message || 'Unable to submit the video answer.')
+    } finally {
+      setSubmitting(false)
     }
   }
+
+  if (loading && questions.length === 0) return <SkeletonLoader rows={4} />
+  if (error && questions.length === 0) return <ErrorState title="Unable to load interview" message={error.message} onRetry={reload} />
+  if (questions.length === 0) return <ErrorState title="No interview questions" message="This session has no saved questions." onRetry={reload} />
 
   return (
     <div>
@@ -94,11 +140,11 @@ export default function VideoInterview() {
               <button onClick={toggleCam} className={`btn-icon !w-11 !h-11 ${!camOn && 'bg-error/10 text-error'}`}>{camOn ? <Video size={18} /> : <VideoOff size={18} />}</button>
               <button onClick={toggleMic} className={`btn-icon !w-11 !h-11 ${!micOn && 'bg-error/10 text-error'}`}>{micOn ? <Mic size={18} /> : <MicOff size={18} />}</button>
               {!recorder.recording ? (
-                <Button icon={Circle} disabled={camera.status !== 'granted'} onClick={recorder.start}>Start recording</Button>
+                <Button icon={Circle} disabled={camera.status !== 'granted'} onClick={startRecording}>Start recording</Button>
               ) : (
                 <Button variant="coral" icon={Square} onClick={recorder.stop}>Stop</Button>
               )}
-              <Button variant="outline" icon={ChevronRight} onClick={nextOrSubmit}>
+              <Button variant="outline" icon={ChevronRight} loading={submitting} disabled={submitting} onClick={nextOrSubmit}>
                 {current < questions.length - 1 ? 'Next question' : 'Submit interview'}
               </Button>
             </div>
@@ -122,11 +168,13 @@ export default function VideoInterview() {
               ))}
             </ul>
             <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border-subtle text-xs text-text-muted">
-              <Wifi size={13} className="text-success" />Camera engagement: <span className="text-success font-medium">Good</span>
+              <Wifi size={13} className="text-blue" />Camera metrics are calculated after submission.
             </div>
           </Card>
           <Card>
-            <QuestionNavigator total={questions.length} current={current} answered={answered} flagged={[]} onSelect={setCurrent} />
+            <QuestionNavigator total={questions.length} current={current} answered={answered} flagged={[]} onSelect={(index) => {
+              if (!answered.includes(index) && !questions[index]?.isAnswered) setCurrent(index)
+            }} />
           </Card>
         </div>
       </div>

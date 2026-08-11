@@ -1,7 +1,7 @@
 import { cx } from '../../utils/helpers'
 
 const TONES = {
-  neutral: 'bg-black/[0.045] text-text-secondary',
+  neutral: 'bg-white/[0.055] text-text-secondary',
   blue: 'bg-blue/10 text-blue',
   cyan: 'bg-cyan/10 text-cyan',
   coral: 'bg-coral/10 text-coral',

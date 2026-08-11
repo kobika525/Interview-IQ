@@ -4,66 +4,70 @@ import PageHeader from '../../components/common/PageHeader'
 import StatCard from '../../components/common/StatCard'
 import Card from '../../components/common/Card'
 import Badge from '../../components/common/Badge'
-import LineChartCard from '../../components/charts/LineChartCard'
-import BarChartCard from '../../components/charts/BarChartCard'
 import DonutChartCard from '../../components/charts/DonutChartCard'
 import SkeletonLoader from '../../components/common/SkeletonLoader'
 import * as adminService from '../../services/adminService'
-import { ADMIN_USERS, INTERVIEW_HISTORY } from '../../data/mockData'
 import { formatDate, scoreTone } from '../../utils/formatters'
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null)
-  useEffect(() => { adminService.getAdminStats().then(setStats) }, [])
+  const [users, setUsers] = useState([])
+  const [reports, setReports] = useState([])
+
+  useEffect(() => {
+    Promise.all([adminService.getAdminStats(), adminService.getAdminUsers(), adminService.getAdminInterviewReports()])
+      .then(([summary, userItems, reportItems]) => {
+        setStats(summary)
+        setUsers(userItems)
+        setReports(reportItems)
+      })
+  }, [])
+
   if (!stats) return <SkeletonLoader rows={5} />
 
   return (
     <div>
       <PageHeader title="Admin Overview" subtitle="Platform-wide activity and performance." />
-
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <StatCard icon={Users} label="Total users" value={stats.totalUsers.toLocaleString()} trend={12} tone="blue" />
-        <StatCard icon={UserCheck} label="Active users" value={stats.activeUsers.toLocaleString()} trend={6} tone="cyan" />
-        <StatCard icon={FileText} label="Total resumes" value={stats.totalResumes.toLocaleString()} trend={9} tone="blue" />
-        <StatCard icon={Mic} label="Total interviews" value={stats.totalInterviews.toLocaleString()} trend={15} tone="coral" />
+        <StatCard icon={Users} label="Total users" value={stats.totalUsers} tone="blue" />
+        <StatCard icon={UserCheck} label="Active users" value={stats.activeUsers} tone="cyan" />
+        <StatCard icon={FileText} label="Total resumes" value={stats.totalResumes} tone="blue" />
+        <StatCard icon={Mic} label="Completed interviews" value={stats.totalInterviews} tone="coral" />
         <StatCard icon={TrendingUp} label="Avg interview score" value={stats.avgInterviewScore} tone="success" />
-        <StatCard icon={BookOpen} label="Total resources" value={stats.totalResources} tone="warning" />
+        <StatCard icon={BookOpen} label="Active subscriptions" value={stats.activeSubscriptions} tone="warning" />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-5 mb-5">
-        <div className="lg:col-span-2">
-          <LineChartCard title="User growth" subtitle="Registered users by month" data={stats.userGrowth.map((d) => ({ label: d.month, overall: d.users }))} lines={['overall']} />
-        </div>
+        <Card className="lg:col-span-2">
+          <h3 className="font-display font-semibold text-text-primary text-sm mb-3">Popular job roles</h3>
+          {stats.popularRoles.length ? stats.popularRoles.map((role) => (
+            <div key={role.role} className="flex justify-between py-2 border-b border-border-subtle">
+              <span className="text-sm text-text-secondary">{role.role}</span>
+              <Badge tone="blue">{role.count}</Badge>
+            </div>
+          )) : <p className="text-sm text-text-muted">No completed role activity yet.</p>}
+        </Card>
         <DonutChartCard title="Interview mode usage" data={stats.modeUsage} />
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-5 mb-5">
-        <BarChartCard title="Interview activity" subtitle="Sessions per day, this week" data={stats.interviewActivity} nameKey="day" dataKey="interviews" color="#1EA7FF" />
-        <BarChartCard title="Popular job roles" subtitle="Interviews by target role" data={stats.popularRoles} nameKey="role" dataKey="count" color="#00D5FF" />
-      </div>
-
       <div className="grid lg:grid-cols-2 gap-5">
-        <Card className="!p-0 overflow-hidden">
-          <h3 className="font-display font-semibold text-text-primary text-sm p-5 pb-3">Recent users</h3>
-          <div className="px-5 pb-5 space-y-1">
-            {ADMIN_USERS.slice(0, 4).map((u) => (
-              <div key={u.id} className="flex items-center justify-between py-2.5 border-b border-border-subtle last:border-0">
-                <div><p className="text-sm text-text-primary">{u.name}</p><p className="text-xs text-text-muted">{formatDate(u.registeredAt)}</p></div>
-                <Badge tone={u.status === 'Active' ? 'success' : u.status === 'Suspended' ? 'error' : 'neutral'}>{u.status}</Badge>
-              </div>
-            ))}
-          </div>
+        <Card>
+          <h3 className="font-display font-semibold text-text-primary text-sm mb-3">Recent users</h3>
+          {users.slice(0, 4).map((user) => (
+            <div key={user.id} className="flex items-center justify-between py-2.5 border-b border-border-subtle last:border-0">
+              <div><p className="text-sm text-text-primary">{user.fullName}</p><p className="text-xs text-text-muted">{formatDate(user.createdAt)}</p></div>
+              <Badge tone={user.accountStatus === 'ACTIVE' ? 'success' : 'warning'}>{user.accountStatus}</Badge>
+            </div>
+          ))}
         </Card>
-        <Card className="!p-0 overflow-hidden">
-          <h3 className="font-display font-semibold text-text-primary text-sm p-5 pb-3">Recent interviews</h3>
-          <div className="px-5 pb-5 space-y-1">
-            {INTERVIEW_HISTORY.slice(0, 4).map((h) => (
-              <div key={h.id} className="flex items-center justify-between py-2.5 border-b border-border-subtle last:border-0">
-                <div><p className="text-sm text-text-primary">{h.role}</p><p className="text-xs text-text-muted">{h.mode} · {formatDate(h.date)}</p></div>
-                <Badge tone={scoreTone(h.score) === 'success' ? 'success' : 'warning'}>{h.score}</Badge>
-              </div>
-            ))}
-          </div>
+        <Card>
+          <h3 className="font-display font-semibold text-text-primary text-sm mb-3">Recent interview reports</h3>
+          {reports.slice(0, 4).map((report) => (
+            <div key={report.id} className="flex items-center justify-between py-2.5 border-b border-border-subtle last:border-0">
+              <div><p className="text-sm text-text-primary">Session #{report.sessionId}</p><p className="text-xs text-text-muted">{formatDate(report.createdAt)}</p></div>
+              <Badge tone={scoreTone(report.overallScore) === 'success' ? 'success' : 'warning'}>{report.overallScore}</Badge>
+            </div>
+          ))}
         </Card>
       </div>
     </div>

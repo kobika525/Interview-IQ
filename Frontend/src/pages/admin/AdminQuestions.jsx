@@ -14,9 +14,11 @@ import EmptyState from '../../components/common/EmptyState'
 import SkeletonLoader from '../../components/common/SkeletonLoader'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import * as adminService from '../../services/adminService'
-import { JOB_ROLES, INTERVIEW_TYPES, DIFFICULTY_LEVELS } from '../../utils/constants'
-import { randomId } from '../../utils/helpers'
 import toast from 'react-hot-toast'
+
+const EMPTY_FORM = { question: '', careerRoleId: '', category: '', type: 'TECHNICAL', topic: '', difficulty: 'BEGINNER', expectedKeywords: '', modelAnswer: '', isActive: true }
+const INTERVIEW_TYPE_OPTIONS = ['TECHNICAL', 'HR', 'BEHAVIORAL', 'MIXED']
+const DIFFICULTY_OPTIONS = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED']
 
 export default function AdminQuestions() {
   const [items, setItems] = useState([])
@@ -25,24 +27,86 @@ export default function AdminQuestions() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [toDelete, setToDelete] = useState(null)
-  const [form, setForm] = useState({ question: '', role: '', type: '', topic: '', difficulty: '', expectedKeywords: '', modelAnswer: '' })
+  const [form, setForm] = useState(EMPTY_FORM)
+  const [roles, setRoles] = useState([])
+  const [saving, setSaving] = useState(false)
 
-  useEffect(() => { adminService.getAdminQuestions().then((d) => { setItems(d); setLoading(false) }) }, [])
-
-  const filtered = items.filter((q) => q.question.toLowerCase().includes(search.toLowerCase()))
-
-  function openAdd() { setEditing(null); setForm({ question: '', role: '', type: '', topic: '', difficulty: '', expectedKeywords: '', modelAnswer: '' }); setModalOpen(true) }
-  function openEdit(q) { setEditing(q); setForm({ ...q, expectedKeywords: '', modelAnswer: '' }); setModalOpen(true) }
-
-  function save() {
-    if (editing) {
-      setItems((prev) => prev.map((q) => (q.id === editing.id ? { ...q, ...form } : q)))
-      toast.success('Question updated')
-    } else {
-      setItems((prev) => [{ id: randomId('aq'), status: 'Draft', ...form }, ...prev])
-      toast.success('Question added')
+  async function load() {
+    setLoading(true)
+    try {
+      const [questions, careerRoles] = await Promise.all([
+        adminService.getAdminQuestions(),
+        adminService.getAdminCareerRoles(),
+      ])
+      setItems(questions)
+      setRoles(careerRoles)
+    } catch (error) {
+      toast.error(error.message || 'Unable to load the question bank.')
+    } finally {
+      setLoading(false)
     }
-    setModalOpen(false)
+  }
+
+  useEffect(() => { load() }, [])
+
+  const filtered = items.filter((q) => (q.question || '').toLowerCase().includes(search.toLowerCase()))
+
+  function openAdd() { setEditing(null); setForm(EMPTY_FORM); setModalOpen(true) }
+  function openEdit(q) {
+    setEditing(q)
+    setForm({
+      question: q.question,
+      careerRoleId: q.careerRoleId || '',
+      category: q.category || '',
+      type: q.type || 'TECHNICAL',
+      topic: q.topic || '',
+      difficulty: q.difficulty || 'BEGINNER',
+      expectedKeywords: (q.expectedKeywords || []).join(', '),
+      modelAnswer: q.modelAnswer || '',
+      isActive: q.isActive,
+    })
+    setModalOpen(true)
+  }
+
+  async function save() {
+    if (!form.question.trim() || !form.topic.trim() || !form.category.trim()) {
+      toast.error('Question, topic, and category are required.')
+      return
+    }
+    const payload = {
+      questionText: form.question.trim(),
+      careerRoleId: form.careerRoleId ? Number(form.careerRoleId) : null,
+      topic: form.topic.trim(),
+      category: form.category.trim(),
+      difficulty: form.difficulty,
+      interviewType: form.type,
+      expectedKeywords: form.expectedKeywords.split(',').map((item) => item.trim()).filter(Boolean),
+      sampleAnswer: form.modelAnswer.trim() || null,
+      isActive: form.isActive,
+    }
+    setSaving(true)
+    try {
+      if (editing) await adminService.updateAdminQuestion(editing.id, payload)
+      else await adminService.createAdminQuestion(payload)
+      await load()
+      setModalOpen(false)
+      toast.success(editing ? 'Question updated' : 'Question added')
+    } catch (error) {
+      toast.error(error.message || 'Unable to save the question.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function remove() {
+    try {
+      await adminService.deleteAdminQuestion(toDelete.id)
+      setItems((previous) => previous.filter((item) => item.id !== toDelete.id))
+      setToDelete(null)
+      toast.success('Question deleted')
+    } catch (error) {
+      toast.error(error.message || 'Unable to delete the question.')
+    }
   }
 
   const columns = [
@@ -79,23 +143,24 @@ export default function AdminQuestions() {
       )}
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit question' : 'Add question'} size="lg"
-        footer={<><Button variant="ghost" onClick={() => setModalOpen(false)}>Cancel</Button><Button onClick={save}>{editing ? 'Save changes' : 'Add question'}</Button></>}>
+        footer={<><Button variant="ghost" onClick={() => setModalOpen(false)}>Cancel</Button><Button loading={saving} onClick={save}>{editing ? 'Save changes' : 'Add question'}</Button></>}>
         <div className="space-y-4">
           <Textarea label="Question text" rows={3} value={form.question} onChange={(e) => setForm({ ...form, question: e.target.value })} />
           <div className="grid sm:grid-cols-2 gap-4">
-            <Select label="Job role" options={['All Roles', ...JOB_ROLES]} value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} />
-            <Select label="Interview type" options={INTERVIEW_TYPES} value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} />
+            <Select label="Job role" placeholder="All roles" options={roles.map((role) => ({ value: role.id, label: role.title }))} value={form.careerRoleId} onChange={(e) => setForm({ ...form, careerRoleId: e.target.value })} />
+            <Select label="Interview type" options={INTERVIEW_TYPE_OPTIONS} value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} />
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <Input label="Topic" value={form.topic} onChange={(e) => setForm({ ...form, topic: e.target.value })} />
-            <Select label="Difficulty" options={DIFFICULTY_LEVELS} value={form.difficulty} onChange={(e) => setForm({ ...form, difficulty: e.target.value })} />
+            <Select label="Difficulty" options={DIFFICULTY_OPTIONS} value={form.difficulty} onChange={(e) => setForm({ ...form, difficulty: e.target.value })} />
           </div>
+          <Input label="Category" placeholder="e.g. Backend, Frontend, Behavioural" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
           <Input label="Expected keywords (comma-separated)" value={form.expectedKeywords} onChange={(e) => setForm({ ...form, expectedKeywords: e.target.value })} />
           <Textarea label="Model answer" rows={3} value={form.modelAnswer} onChange={(e) => setForm({ ...form, modelAnswer: e.target.value })} />
         </div>
       </Modal>
 
-      <ConfirmDialog open={Boolean(toDelete)} onClose={() => setToDelete(null)} onConfirm={() => { setItems((p) => p.filter((i) => i.id !== toDelete.id)); setToDelete(null) }}
+      <ConfirmDialog open={Boolean(toDelete)} onClose={() => setToDelete(null)} onConfirm={remove}
         title="Delete question?" message="This question will be permanently removed from the bank." confirmLabel="Delete" />
     </div>
   )

@@ -18,7 +18,7 @@ export default function TopNav({ title, onMenuClick }) {
   return (
     <>
       <header className="sticky top-0 z-30 flex items-center gap-3 px-4 md:px-6 h-16 bg-topnav/90 backdrop-blur-md border-b border-border-subtle">
-        <button onClick={onMenuClick} className="btn-icon lg:hidden"><Menu size={20} /></button>
+        <button onClick={onMenuClick} className="btn-icon lg:hidden" aria-label="Open navigation menu"><Menu size={20} /></button>
         <h2 className="font-display font-semibold text-text-primary text-base hidden sm:block">{title}</h2>
 
         <div className="flex-1 max-w-sm ml-auto hidden md:block">
@@ -40,7 +40,7 @@ export default function TopNav({ title, onMenuClick }) {
         <Dropdown
           trigger={
             <button className="flex items-center gap-2 pl-1 pr-1">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue to-cyan flex items-center justify-center text-[11px] font-semibold text-white">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue to-cyan flex items-center justify-center text-[11px] font-semibold text-black">
                 {user?.fullName?.[0] || 'U'}
               </div>
             </button>

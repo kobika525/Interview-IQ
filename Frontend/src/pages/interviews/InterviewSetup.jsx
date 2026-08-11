@@ -8,7 +8,6 @@ import Button from '../../components/common/Button'
 import Select from '../../components/common/Select'
 import RadioGroup from '../../components/common/RadioGroup'
 import MultiSelect from '../../components/common/MultiSelect'
-import Badge from '../../components/common/Badge'
 import { JOB_ROLES, INTERVIEW_TYPES, DIFFICULTY_LEVELS } from '../../utils/constants'
 import { cx } from '../../utils/helpers'
 import * as interviewService from '../../services/interviewService'
@@ -42,10 +41,15 @@ export default function InterviewSetup() {
 
   async function startInterview() {
     setCreating(true)
-    const session = await interviewService.createInterviewSession(setup)
-    setCreating(false)
-    toast.success('Interview session ready!')
-    navigate(`/app/interviews/${setup.mode}/${session.id}`, { state: { session } })
+    try {
+      const session = await interviewService.createInterviewSession(setup)
+      toast.success('Interview session ready!')
+      navigate(`/app/interviews/${setup.mode}/${session.id}`, { state: { session } })
+    } catch (error) {
+      toast.error(error.message || 'Unable to start the interview. Please try again.')
+    } finally {
+      setCreating(false)
+    }
   }
 
   return (
@@ -57,7 +61,7 @@ export default function InterviewSetup() {
         {STEP_LABELS.map((label, i) => (
           <div key={label} className="flex items-center">
             <div className={cx('flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap',
-              i === step ? 'bg-blue text-white' : i < step ? 'bg-success/15 text-success' : 'bg-black/[0.045] text-text-muted')}>
+              i === step ? 'bg-blue text-black' : i < step ? 'bg-success/15 text-success' : 'bg-white/[0.055] text-text-muted')}>
               {i < step ? <Check size={12} /> : i + 1}
               {label}
             </div>

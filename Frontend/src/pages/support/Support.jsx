@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import toast from 'react-hot-toast'
-import { LifeBuoy, Bug, Lightbulb, MessageSquare, Search } from 'lucide-react'
+import { LifeBuoy, Bug, Lightbulb, MessageSquare } from 'lucide-react'
 import PageHeader from '../../components/common/PageHeader'
 import Card from '../../components/common/Card'
 import Tabs from '../../components/common/Tabs'
@@ -14,6 +14,7 @@ import Textarea from '../../components/common/Textarea'
 import Button from '../../components/common/Button'
 import Badge from '../../components/common/Badge'
 import EmptyState from '../../components/common/EmptyState'
+import * as supportService from '../../services/supportService'
 
 const HELP_ARTICLES = [
   { q: 'How do I upload a resume?', a: 'Go to Resume Analyzer and drag your PDF or DOCX file into the upload area, then click Analyse Resume.' },
@@ -28,18 +29,17 @@ const ticketSchema = z.object({
   message: z.string().min(10, 'Please describe your issue in a bit more detail'),
 })
 
-const TICKETS = [
-  { id: 'TCK-1042', subject: 'Video interview camera not detected', status: 'Open', date: '2026-07-15' },
-  { id: 'TCK-1031', subject: 'Question about Premium billing', status: 'Resolved', date: '2026-07-02' },
-]
-
 export default function Support() {
   const [tab, setTab] = useState('help')
   const [search, setSearch] = useState('')
+  const [tickets, setTickets] = useState([])
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({ resolver: zodResolver(ticketSchema) })
 
+  useEffect(() => { supportService.getTickets().then(setTickets) }, [])
+
   async function submitTicket(data) {
-    await new Promise((r) => setTimeout(r, 900))
+    await supportService.createTicket(data)
+    setTickets(await supportService.getTickets())
     toast.success('Support ticket submitted — we\'ll get back to you soon.')
     reset()
     setTab('tickets')
@@ -92,7 +92,7 @@ export default function Support() {
 
       {tab === 'tickets' && (
         <div className="space-y-3 max-w-2xl">
-          {TICKETS.map((t) => (
+          {tickets.map((t) => (
             <Card key={t.id} className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-text-primary">{t.subject}</p>

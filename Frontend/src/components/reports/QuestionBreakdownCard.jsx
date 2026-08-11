@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import Card from '../common/Card'
-import SkillTag from '../common/SkillTag'
 import Badge from '../common/Badge'
 import { scoreTone } from '../../utils/formatters'
 
@@ -30,10 +29,6 @@ export default function QuestionBreakdownCard({ item, index }) {
           <div>
             <p className="field-label">AI feedback</p>
             <p className="text-sm text-text-secondary">{item.feedback}</p>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {item.matchedKeywords.map((k) => <SkillTag key={k} tone="matched">{k}</SkillTag>)}
-            {item.missingKeywords.map((k) => <SkillTag key={k} tone="missing">{k}</SkillTag>)}
           </div>
           <div>
             <p className="field-label">Model answer</p>

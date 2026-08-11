@@ -9,19 +9,54 @@ import Button from '../../components/common/Button'
 import CareerCard from '../../components/career/CareerCard'
 import SkeletonLoader from '../../components/common/SkeletonLoader'
 import * as careerService from '../../services/careerService'
-import { JOB_ROLES, STUDY_LEVELS } from '../../utils/constants'
+import * as userService from '../../services/userService'
+import * as resumeService from '../../services/resumeService'
+import { STUDY_LEVELS } from '../../utils/constants'
+import toast from 'react-hot-toast'
 
 const INDUSTRIES = ['Software Product', 'Fintech', 'E-commerce', 'Healthtech', 'Consulting', 'Startups']
 const WORK_STYLES = ['Remote', 'Hybrid', 'On-site']
+const EXPERIENCE_LEVELS = ['Beginner', 'Intermediate', 'Advanced']
+const displayLevel = (value) => value ? `${value.charAt(0)}${value.slice(1).toLowerCase()}` : ''
 
 export default function CareerGuidance() {
   const [loading, setLoading] = useState(true)
   const [careers, setCareers] = useState([])
-  const [skills, setSkills] = useState(['JavaScript', 'React', 'SQL'])
+  const [skills, setSkills] = useState([])
   const [compareIds, setCompareIds] = useState([])
-  const [form, setForm] = useState({ education: '', interests: '', industry: '', workStyle: '', goals: '' })
+  const [form, setForm] = useState({ education: '', experience: '', interests: '', industry: '', workStyle: '', location: '', goals: '' })
 
-  useEffect(() => { careerService.getCareerRecommendations({}).then((d) => { setCareers(d); setLoading(false) }) }, [])
+  useEffect(() => {
+    Promise.all([
+      careerService.getSavedCareerMatches(), careerService.getMySkills(),
+      userService.getProfile(), resumeService.getResumeHistory(),
+    ])
+      .then(([matches, profile, userProfile, resumes]) => {
+        setCareers(matches)
+        const resumeSkills = resumes[0]?.skillsFound || []
+        setSkills([...new Set([...profile, ...resumeSkills])])
+        setForm((current) => ({
+          ...current,
+          education: userProfile.degree || '',
+          experience: displayLevel(userProfile.studyLevel),
+          location: userProfile.location || '',
+          goals: userProfile.careerGoal || '',
+        }))
+      })
+      .catch((error) => toast.error(error.message))
+      .finally(() => setLoading(false))
+  }, [])
+
+  async function recommend() {
+    setLoading(true)
+    try {
+      setCareers(await careerService.getCareerRecommendations({ ...form, skills }))
+    } catch (error) {
+      toast.error(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   function toggleCompare(id) {
     setCompareIds((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : prev.length < 3 ? [...prev, id] : prev))
@@ -33,19 +68,20 @@ export default function CareerGuidance() {
     <div>
       <PageHeader title="Career Guidance" subtitle="Tell us about yourself to get matched roles and a roadmap." />
 
-      <div className="grid lg:grid-cols-3 gap-5">
-        <Card className="lg:col-span-1 h-fit space-y-4">
+      <div className="grid lg:grid-cols-[320px_minmax(0,1fr)] gap-6">
+        <Card className="h-fit space-y-4 lg:sticky lg:top-24">
           <Select label="Education level" options={STUDY_LEVELS} value={form.education} onChange={(e) => setForm({ ...form, education: e.target.value })} />
+          <Select label="Experience level" options={EXPERIENCE_LEVELS} value={form.experience} onChange={(e) => setForm({ ...form, experience: e.target.value })} />
           <MultiSelect label="Current skills" value={skills} onChange={setSkills} />
           <Input label="Interests" placeholder="Backend systems, cloud infra" value={form.interests} onChange={(e) => setForm({ ...form, interests: e.target.value })} />
           <Select label="Preferred industry" options={INDUSTRIES} value={form.industry} onChange={(e) => setForm({ ...form, industry: e.target.value })} />
           <Select label="Preferred work style" options={WORK_STYLES} value={form.workStyle} onChange={(e) => setForm({ ...form, workStyle: e.target.value })} />
-          <Input label="Target location" placeholder="e.g. Colombo, Remote" />
+          <Input label="Target location" placeholder="e.g. Colombo, Remote" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
           <Input label="Career goals" placeholder="e.g. Backend Engineer within 6 months" value={form.goals} onChange={(e) => setForm({ ...form, goals: e.target.value })} />
-          <Button fullWidth onClick={() => careerService.getCareerRecommendations(form).then(setCareers)}>Get recommendations</Button>
+          <Button fullWidth loading={loading} onClick={recommend}>Get recommendations</Button>
         </Card>
 
-        <div className="lg:col-span-2 space-y-5">
+        <div className="min-w-0 space-y-5">
           {compareCareers.length > 0 && (
             <Card>
               <div className="flex items-center justify-between mb-3">
@@ -61,6 +97,8 @@ export default function CareerGuidance() {
                   <tbody>
                     {[
                       ['Match score', (c) => `${c.match}%`],
+                      ['Required skills', (c) => `${Math.round(c.scoreBreakdown?.requiredSkills ?? c.match)}%`],
+                      ['Experience fit', (c) => `${Math.round(c.scoreBreakdown?.experience ?? c.match)}%`],
                       ['Readiness', (c) => `${c.match >= 80 ? 'High' : c.match >= 60 ? 'Medium' : 'Low'}`],
                       ['Learning duration', (c) => c.duration],
                       ['Demand', (c) => c.demand],
@@ -76,16 +114,20 @@ export default function CareerGuidance() {
             </Card>
           )}
 
-          {loading ? <SkeletonLoader rows={3} /> : (
+          {loading ? <SkeletonLoader rows={3} /> : careers.length === 0 ? (
+            <Card className="py-14 text-center">
+              <p className="text-sm font-medium text-text-primary">No career matches available</p>
+              <p className="text-xs text-text-muted mt-1">Add your skills and preferences, then try again.</p>
+            </Card>
+          ) : (
             <div className="grid sm:grid-cols-1 xl:grid-cols-2 gap-5">
               {careers.map((c) => (
-                <div key={c.id} className="relative">
-                  <label className="absolute top-5 right-5 z-10 flex items-center gap-1.5 text-[11px] text-text-muted cursor-pointer">
-                    <input type="checkbox" checked={compareIds.includes(c.id)} onChange={() => toggleCompare(c.id)} className="accent-blue" />
-                    Compare
-                  </label>
-                  <CareerCard career={c} />
-                </div>
+                <CareerCard
+                  key={c.id}
+                  career={c}
+                  compared={compareIds.includes(c.id)}
+                  onToggleCompare={() => toggleCompare(c.id)}
+                />
               ))}
             </div>
           )}

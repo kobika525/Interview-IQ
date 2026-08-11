@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { Download, Save, RefreshCw, Mic } from 'lucide-react'
@@ -8,6 +8,7 @@ import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
 import Tabs from '../../components/common/Tabs'
 import Badge from '../../components/common/Badge'
+import Select from '../../components/common/Select'
 import SkillTag from '../../components/common/SkillTag'
 import ProgressBar from '../../components/common/ProgressBar'
 import AIProcessingLoader from '../../components/interview/AIProcessingLoader'
@@ -15,7 +16,7 @@ import ResumeScoreRing from '../../components/resume/ResumeScoreRing'
 import ResumeSectionCheck from '../../components/resume/ResumeSectionCheck'
 import UpgradeBanner from '../../components/billing/UpgradeBanner'
 import * as resumeService from '../../services/resumeService'
-import { RESUME_ANALYSES } from '../../data/mockData'
+import * as careerService from '../../services/careerService'
 import { useAuth } from '../../hooks/useAuth'
 import { canScanAnotherResume, isPremium } from '../../utils/permissions'
 import { FREE_RESUME_SCAN_LIMIT } from '../../utils/constants'
@@ -37,6 +38,14 @@ export default function ResumeAnalyzer() {
   const [step, setStep] = useState(0)
   const [result, setResult] = useState(null)
   const [tab, setTab] = useState('overview')
+  const [roles, setRoles] = useState([])
+  const [targetRoleId, setTargetRoleId] = useState('')
+
+  useEffect(() => {
+    careerService.getCareerRoles()
+      .then(setRoles)
+      .catch((error) => toast.error(error.message))
+  }, [])
 
   const scansUsed = user?.usage?.resumeScansThisMonth ?? 0
   const limitReached = !canScanAnotherResume(user)
@@ -46,16 +55,19 @@ export default function ResumeAnalyzer() {
     setProcessing(true)
     setStep(0)
     const timer = setInterval(() => setStep((s) => Math.min(s + 1, STEPS.length - 1)), 550)
-    const data = await resumeService.analyzeResume(file)
-
-    clearInterval(timer)
-    setStep(STEPS.length - 1)
-    setTimeout(() => {
+    try {
+      const data = await resumeService.analyzeResume(file, targetRoleId)
+      clearInterval(timer)
+      setStep(STEPS.length - 1)
       setResult(data)
-      setProcessing(false)
       updateUser({ usage: { ...user?.usage, resumeScansThisMonth: scansUsed + 1 } })
       toast.success('Resume analysis complete!')
-    }, 400)
+    } catch (error) {
+      clearInterval(timer)
+      toast.error(error.message)
+    } finally {
+      setProcessing(false)
+    }
   }
 
   return (
@@ -75,7 +87,16 @@ export default function ResumeAnalyzer() {
       {!result && !processing && (
         <Card className="max-w-2xl">
           <FileUpload file={file} onFile={setFile} onRemove={() => setFile(null)} />
-          <Button className="mt-5" fullWidth disabled={!file || limitReached} onClick={analyze}>
+          <Select
+            label="Target role"
+            placeholder="Select a role for accurate skill matching"
+            options={roles.map((role) => ({ value: String(role.id), label: role.title }))}
+            value={targetRoleId}
+            onChange={(event) => setTargetRoleId(event.target.value)}
+            containerClassName="mt-5"
+          />
+          <p className="text-xs text-text-muted mt-2">The target role is used to measure required keywords and missing skills.</p>
+          <Button className="mt-5" fullWidth disabled={!file || !targetRoleId || limitReached} onClick={analyze}>
             {limitReached ? 'Upgrade to analyse another resume' : 'Analyse Resume'}
           </Button>
         </Card>
@@ -102,7 +123,7 @@ export default function ResumeAnalyzer() {
               <Card className="md:col-span-2"><ResumeScoreRing score={result.atsScore} /></Card>
               <Card>
                 <p className="text-xs font-semibold text-text-muted mb-3">SCORE BREAKDOWN</p>
-                {[['Grammar', result.grammarScore], ['Formatting', result.formattingScore], ['Keywords', result.keywordScore]].map(([l, v]) => (
+                {[['Experience', result.experienceScore], ['Formatting', result.formattingScore], ['Keywords', result.keywordScore]].map(([l, v]) => (
                   <div key={l} className="mb-3">
                     <div className="flex justify-between text-xs mb-1"><span className="text-text-secondary">{l}</span><span className="font-mono text-text-primary">{v}</span></div>
                     <ProgressBar value={v} />
@@ -131,7 +152,7 @@ export default function ResumeAnalyzer() {
           {tab === 'ats' && (
             <Card>
               <p className="text-xs font-semibold text-text-muted mb-4">DETAILED ATS BREAKDOWN</p>
-              {[['Overall ATS score', result.atsScore], ['Keyword score', result.keywordScore], ['Formatting score', result.formattingScore], ['Grammar score', result.grammarScore]].map(([l, v]) => (
+              {[['Overall ATS score', result.atsScore], ['Keyword score', result.keywordScore], ['Formatting score', result.formattingScore], ['Experience score', result.experienceScore], ['Education score', result.educationScore], ['Achievement score', result.achievementScore]].map(([l, v]) => (
                 <div key={l} className="mb-4">
                   <div className="flex justify-between text-sm mb-1.5"><span className="text-text-secondary">{l}</span><span className="font-mono text-text-primary">{v}/100</span></div>
                   <ProgressBar value={v} height="h-2" />

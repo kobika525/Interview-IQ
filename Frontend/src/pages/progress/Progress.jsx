@@ -9,15 +9,6 @@ import BarChartCard from '../../components/charts/BarChartCard'
 import DonutChartCard from '../../components/charts/DonutChartCard'
 import SkeletonLoader from '../../components/common/SkeletonLoader'
 import * as progressService from '../../services/progressService'
-import { RESUME_ANALYSES, ADMIN_STATS } from '../../data/mockData'
-
-const TOPIC_PERFORMANCE = [
-  { name: 'React', value: 82 }, { name: 'System Design', value: 58 }, { name: 'SQL', value: 76 },
-  { name: 'Behavioral', value: 88 }, { name: 'JavaScript', value: 80 },
-]
-const MONTHLY_ACTIVITY = [
-  { name: 'Mar', value: 4 }, { name: 'Apr', value: 6 }, { name: 'May', value: 5 }, { name: 'Jun', value: 8 }, { name: 'Jul', value: 9 },
-]
 
 export default function Progress() {
   const [data, setData] = useState(null)
@@ -26,7 +17,7 @@ export default function Progress() {
 
   if (!data) return <SkeletonLoader rows={5} />
 
-  const resumeDelta = RESUME_ANALYSES[0].atsScore - RESUME_ANALYSES[RESUME_ANALYSES.length - 1].atsScore
+  const resumeDelta = data.resumeImprovement || 0
 
   return (
     <div>
@@ -43,12 +34,12 @@ export default function Progress() {
         <div className="lg:col-span-2">
           <LineChartCard title="Interview score trend" subtitle="Overall, technical & communication" data={data.trend} lines={['overall', 'technical', 'communication']} />
         </div>
-        <DonutChartCard title="Interview mode comparison" data={ADMIN_STATS.modeUsage} />
+        <DonutChartCard title="Interview mode comparison" data={data.modeDistribution || []} />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-5 mb-5">
-        <BarChartCard title="Topic performance" subtitle="Average score by topic" data={TOPIC_PERFORMANCE} color="#00D5FF" />
-        <BarChartCard title="Monthly activity" subtitle="Interviews completed per month" data={MONTHLY_ACTIVITY} color="#1EA7FF" />
+        <BarChartCard title="Topic performance" subtitle="Average score by topic" data={data.topicPerformance || []} color="#D3FF73" />
+        <BarChartCard title="Monthly activity" subtitle="Interviews completed per month" data={data.monthlyActivity || []} color="#B6FF3B" />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-5">
