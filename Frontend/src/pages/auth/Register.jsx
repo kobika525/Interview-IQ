@@ -36,25 +36,22 @@ export default function Register() {
       await registerUser({ ...data, fullName: data.fullName, skills })
       toast.success('Account created — welcome to Interview IQ!')
       navigate('/app/dashboard', { replace: true })
-    } catch {
-      setApiError('Registration failed. Please try again.')
-      toast.error('Registration failed.')
+    } catch (error) {
+      const detail = error.details?.[0]?.msg?.replace(/^Value error,\s*/i, '')
+      const message = detail || error.message || 'Registration failed. Please try again.'
+      setApiError(message)
+      toast.error(message)
     }
   }
 
   return (
     <div>
-      <h1 className="font-display font-bold text-2xl md:text-3xl text-text-primary">Create your account</h1>
-      <p className="text-sm text-text-muted mt-2">Takes about two minutes.</p>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="mt-7 space-y-4" noValidate>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         <div className="grid sm:grid-cols-2 gap-4">
           <Input label="Full name" icon={UserIcon} placeholder="Jane Doe" error={errors.fullName?.message} {...register('fullName')} />
           <Input label="Email address" icon={Mail} type="email" placeholder="you@email.com" error={errors.email?.message} {...register('email')} />
         </div>
-        <div className="grid sm:grid-cols-1 gap-4">
-          <Select label="Current study level" options={STUDY_LEVELS} error={errors.studyLevel?.message} {...register('studyLevel')} />
-        </div>
+        <Select label="Current study level" options={STUDY_LEVELS} error={errors.studyLevel?.message} {...register('studyLevel')} />
         <div className="grid sm:grid-cols-2 gap-4">
           <PasswordInput label="Password" error={errors.password?.message} {...register('password')} />
           <PasswordInput label="Confirm password" error={errors.confirmPassword?.message} {...register('confirmPassword')} />
@@ -77,11 +74,11 @@ export default function Register() {
           )}
         />
 
-        <Button type="submit" fullWidth loading={isSubmitting}>Create account</Button>
+        <Button type="submit" fullWidth loading={isSubmitting} className="!rounded-full !py-3">Create account</Button>
       </form>
 
-      <p className="text-sm text-text-muted mt-7 text-center">
-        Already have an account? <Link to="/login" className="text-blue font-semibold hover:text-cyan">Log in</Link>
+      <p className="text-sm text-text-secondary mt-6 text-center">
+        Already have an account? <Link to="/login" className="font-medium text-blue hover:text-cyan">Log in</Link>
       </p>
     </div>
   )

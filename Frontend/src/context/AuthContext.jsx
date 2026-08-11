@@ -22,26 +22,36 @@ export function AuthProvider({ children }) {
   }, [])
 
   const login = useCallback(async (credentials) => {
-    const { user: loggedInUser, token } = await authService.login(credentials)
+    const { user: loggedInUser, token, refreshToken } = await authService.login(credentials)
     localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token)
+    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
     localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(loggedInUser))
     setUser(loggedInUser)
     return loggedInUser
   }, [])
 
   const register = useCallback(async (payload) => {
-    const { user: newUser, token } = await authService.register(payload)
+    const { user: newUser, token, refreshToken } = await authService.register(payload)
     localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token)
+    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken)
     localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(newUser))
     setUser(newUser)
     return newUser
   }, [])
 
   const logout = useCallback(async () => {
-    await authService.logout()
+    // Logout must never depend on the revocation request succeeding. An expired
+    // refresh token or an offline API should not keep a local session alive.
+    const revokeRequest = authService.logout()
     localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
     localStorage.removeItem(STORAGE_KEYS.AUTH_USER)
     setUser(null)
+    try {
+      await revokeRequest
+    } catch {
+      // Local logout is already complete; server tokens expire independently.
+    }
   }, [])
 
   const updateUser = useCallback((patch) => {

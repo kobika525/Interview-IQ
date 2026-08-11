@@ -1,38 +1,36 @@
-import { MOCK_USER, ADMIN_USER } from '../data/mockData'
-import { delay, randomId } from '../utils/helpers'
-
-// Mock implementation. Replace bodies with real `api.post(...)` calls
-// against your FastAPI backend once endpoints are ready.
+import api from './axios'
+import { toSnakeCase, unwrap } from './apiUtils'
+import { STORAGE_KEYS } from '../utils/constants'
 
 export async function login({ email, password }) {
-  await delay(900)
-  if (email === 'admin@interviewiq.app') {
-    return { user: ADMIN_USER, token: randomId('admintok') }
-  }
-  if (!email || !password || password.length < 6) {
-    const err = new Error('Invalid email or password')
-    err.code = 'INVALID_CREDENTIALS'
-    throw err
-  }
-  return { user: { ...MOCK_USER, email }, token: randomId('tok') }
+  const data = unwrap(await api.post('/auth/login', { email, password, remember: true }))
+  return { user: data.user, token: data.accessToken, refreshToken: data.refreshToken }
 }
 
 export async function register(payload) {
-  await delay(1100)
-  return { user: { ...MOCK_USER, ...payload }, token: randomId('tok') }
+  const data = unwrap(await api.post('/auth/register', toSnakeCase({
+    ...payload,
+    confirmPassword: payload.confirmPassword || payload.password,
+  })))
+  return { user: data.user, token: data.accessToken, refreshToken: data.refreshToken }
 }
 
 export async function forgotPassword({ email }) {
-  await delay(900)
+  await api.post('/auth/forgot-password', { email })
   return { sent: true, email }
 }
 
-export async function resetPassword({ password }) {
-  await delay(900)
+export async function resetPassword({ token, password, confirmPassword }) {
+  await api.post('/auth/reset-password', {
+    token,
+    new_password: password,
+    confirm_password: confirmPassword || password,
+  })
   return { success: true }
 }
 
 export async function logout() {
-  await delay(200)
+  const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)
+  if (refreshToken) await api.post('/auth/logout', { refresh_token: refreshToken })
   return { success: true }
 }

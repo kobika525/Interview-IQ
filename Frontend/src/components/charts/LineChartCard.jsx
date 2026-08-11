@@ -1,7 +1,10 @@
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
 import ChartCard from '../common/ChartCard'
 
-const COLORS = { overall: '#1EA7FF', technical: '#00D5FF', communication: '#FF4964' }
+const COLORS = {
+  overall: '#B6FF3B', technical: '#D3FF73', communication: '#8FC52B',
+  grammar: '#9B7BFF', confidence: '#FFB547',
+}
 
 export default function LineChartCard({ title, subtitle, data, lines, height = 260 }) {
   return (
@@ -14,7 +17,7 @@ export default function LineChartCard({ title, subtitle, data, lines, height = 2
           <Tooltip contentStyle={{ background: '#151D2E', border: '1px solid #273149', borderRadius: 10, fontSize: 12 }} />
           {lines.length > 1 && <Legend wrapperStyle={{ fontSize: 11, color: '#8792AA' }} />}
           {lines.map((key) => (
-            <Line key={key} type="monotone" dataKey={key} stroke={COLORS[key] || '#1EA7FF'} strokeWidth={2.5} dot={false} />
+            <Line key={key} type="monotone" dataKey={key} stroke={COLORS[key] || '#B6FF3B'} strokeWidth={2.5} dot={false} />
           ))}
         </LineChart>
       </ResponsiveContainer>

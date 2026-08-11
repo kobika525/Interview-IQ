@@ -37,15 +37,14 @@ function pageTitle(pathname) {
 
 export default function AppLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [collapsed, setCollapsed] = useState(false)
   const location = useLocation()
 
   return (
     <div className="min-h-screen bg-app text-text-primary flex">
-      {/* Desktop sidebar — collapsible rail */}
-      <aside className={`hidden lg:block ${collapsed ? 'w-20' : 'w-64'} shrink-0 border-r border-border-subtle`}>
-        <div className={`fixed ${collapsed ? 'w-20' : 'w-64'} h-screen`}>
-          <Sidebar compact={collapsed} />
+      {/* Desktop sidebar — compact icon-only rail */}
+      <aside className="hidden w-72 shrink-0 border-r border-border-subtle lg:block">
+        <div className="fixed h-screen w-72">
+          <Sidebar />
         </div>
       </aside>
 
@@ -62,8 +61,8 @@ export default function AppLayout() {
               className="fixed inset-y-0 left-0 z-50 w-72 lg:hidden"
             >
               <div className="relative h-full">
-                <button onClick={() => setDrawerOpen(false)} className="btn-icon absolute top-4 right-3 z-10"><X size={18} /></button>
-                <Sidebar onNavigate={() => setDrawerOpen(false)} />
+                <button onClick={() => setDrawerOpen(false)} className="btn-icon absolute top-4 right-3 z-10" aria-label="Close navigation menu"><X size={18} /></button>
+                <Sidebar mobile onNavigate={() => setDrawerOpen(false)} />
               </div>
             </motion.aside>
           </>
@@ -71,7 +70,7 @@ export default function AppLayout() {
       </AnimatePresence>
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <TopNav title={pageTitle(location.pathname)} onMenuClick={() => setDrawerOpen(true)} collapsed={collapsed} onCollapseClick={() => setCollapsed((c) => !c)} />
+        <TopNav title={pageTitle(location.pathname)} onMenuClick={() => setDrawerOpen(true)} />
         <main className="flex-1 px-4 md:px-6 lg:px-8 py-6 max-w-[1400px] w-full mx-auto">
           <AnimatePresence mode="wait">
             <motion.div

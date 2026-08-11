@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, Pencil, Trash2, ExternalLink, BookOpen } from 'lucide-react'
+import { Plus, Pencil, Trash2, ExternalLink, BookOpen, Send, Archive } from 'lucide-react'
 import PageHeader from '../../components/common/PageHeader'
 import SearchBar from '../../components/common/SearchBar'
 import DataTable from '../../components/common/DataTable'
@@ -14,10 +14,9 @@ import EmptyState from '../../components/common/EmptyState'
 import SkeletonLoader from '../../components/common/SkeletonLoader'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import * as adminService from '../../services/adminService'
-import { randomId } from '../../utils/helpers'
 import toast from 'react-hot-toast'
 
-const TYPES = ['Course', 'Article', 'Video', 'Documentation', 'Coding Exercise', 'Interview Questions']
+const TYPES = ['Course', 'Article', 'Video', 'Documentation', 'Coding Exercise', 'Interview Questions', 'Certification']
 const DIFFICULTIES = ['Beginner', 'Intermediate', 'Advanced']
 
 export default function AdminResources() {
@@ -27,23 +26,60 @@ export default function AdminResources() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [toDelete, setToDelete] = useState(null)
+  const [publishingId, setPublishingId] = useState(null)
   const [form, setForm] = useState({ name: '', skill: '', type: '', url: '', difficulty: '', description: '', duration: '' })
 
-  useEffect(() => { adminService.getAdminResources().then((d) => { setItems(d); setLoading(false) }) }, [])
-  const filtered = items.filter((r) => r.name.toLowerCase().includes(search.toLowerCase()))
+  useEffect(() => {
+    adminService.getAdminResources()
+      .then(setItems)
+      .catch((error) => toast.error(error.message))
+      .finally(() => setLoading(false))
+  }, [])
+  const filtered = items.filter((r) => (r.name || '').toLowerCase().includes(search.toLowerCase()))
 
   function openAdd() { setEditing(null); setForm({ name: '', skill: '', type: '', url: '', difficulty: '', description: '', duration: '' }); setModalOpen(true) }
   function openEdit(r) { setEditing(r); setForm(r); setModalOpen(true) }
 
-  function save() {
-    if (editing) {
-      setItems((prev) => prev.map((r) => (r.id === editing.id ? { ...r, ...form } : r)))
-      toast.success('Resource updated')
-    } else {
-      setItems((prev) => [{ id: randomId('ar'), status: 'Draft', ...form }, ...prev])
-      toast.success('Resource added')
+  async function save() {
+    try {
+      if (editing) {
+        const updated = await adminService.updateAdminResource(editing.id, form)
+        setItems((prev) => prev.map((resource) => resource.id === updated.id ? updated : resource))
+        toast.success('Resource updated')
+      } else {
+        const created = await adminService.createAdminResource(form)
+        setItems((prev) => [created, ...prev])
+        toast.success('Resource added as draft')
+      }
+      setModalOpen(false)
+    } catch (error) {
+      toast.error(error.message)
     }
-    setModalOpen(false)
+  }
+
+  async function togglePublished(resource) {
+    const publish = resource.status !== 'Published'
+    setPublishingId(resource.id)
+    try {
+      const updated = await adminService.setAdminResourcePublished(resource.id, publish)
+      setItems((prev) => prev.map((item) => item.id === updated.id ? updated : item))
+      toast.success(publish ? 'Resource published' : 'Resource moved to draft')
+    } catch (error) {
+      toast.error(error.message)
+    } finally {
+      setPublishingId(null)
+    }
+  }
+
+  async function deleteResource() {
+    try {
+      await adminService.deleteAdminResource(toDelete.id)
+      setItems((prev) => prev.filter((item) => item.id !== toDelete.id))
+      setToDelete(null)
+      toast.success('Resource deleted')
+    } catch (error) {
+      toast.error(error.message)
+    }
   }
 
   const columns = [
@@ -57,6 +93,9 @@ export default function AdminResources() {
       key: 'actions', header: '', render: (r) => (
         <div className="flex gap-1.5">
           <button className="btn-icon" aria-label="Preview"><ExternalLink size={15} /></button>
+          <button disabled={publishingId === r.id} className="btn-icon disabled:cursor-wait disabled:opacity-50" onClick={() => togglePublished(r)} aria-label={r.status === 'Published' ? 'Unpublish' : 'Publish'} title={r.status === 'Published' ? 'Move to draft' : 'Publish resource'}>
+            {r.status === 'Published' ? <Archive size={15} /> : <Send size={15} />}
+          </button>
           <button className="btn-icon" onClick={() => openEdit(r)} aria-label="Edit"><Pencil size={15} /></button>
           <button className="btn-icon" onClick={() => setToDelete(r)} aria-label="Delete"><Trash2 size={15} /></button>
         </div>
@@ -74,8 +113,17 @@ export default function AdminResources() {
       ) : (
         <DataTable columns={columns} data={filtered} renderMobileCard={(r) => (
           <Card>
-            <p className="text-sm font-medium text-text-primary">{r.name}</p>
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-sm font-medium text-text-primary">{r.name}</p>
+              <Badge tone={r.status === 'Published' ? 'success' : 'neutral'}>{r.status}</Badge>
+            </div>
             <p className="text-xs text-text-muted mt-1">{r.skill} · {r.type} · {r.duration}</p>
+            <div className="flex gap-2 mt-3">
+              <Button loading={publishingId === r.id} variant="outline" className="!text-xs !py-1.5 flex-1" onClick={() => togglePublished(r)}>
+                {r.status === 'Published' ? 'Move to draft' : 'Publish'}
+              </Button>
+              <Button variant="ghost" className="!text-xs !py-1.5" onClick={() => openEdit(r)}>Edit</Button>
+            </div>
           </Card>
         )} />
       )}
@@ -97,7 +145,7 @@ export default function AdminResources() {
         </div>
       </Modal>
 
-      <ConfirmDialog open={Boolean(toDelete)} onClose={() => setToDelete(null)} onConfirm={() => { setItems((p) => p.filter((i) => i.id !== toDelete.id)); setToDelete(null) }}
+      <ConfirmDialog open={Boolean(toDelete)} onClose={() => setToDelete(null)} onConfirm={deleteResource}
         title="Delete resource?" message="This resource will no longer be shown to users." confirmLabel="Delete" />
     </div>
   )

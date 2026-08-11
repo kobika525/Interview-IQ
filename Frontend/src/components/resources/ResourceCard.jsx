@@ -3,7 +3,9 @@ import Card from '../common/Card'
 import Badge from '../common/Badge'
 import Button from '../common/Button'
 
-export default function ResourceCard({ resource, onBookmark }) {
+export default function ResourceCard({ resource, onBookmark, onComplete }) {
+  const isInternal = resource.url?.startsWith('/')
+
   return (
     <Card hover className="flex flex-col">
       <div className="flex items-start justify-between gap-2">
@@ -21,7 +23,16 @@ export default function ResourceCard({ resource, onBookmark }) {
       <p className="text-sm text-text-muted mt-1.5 flex-1">{resource.description}</p>
       <div className="flex items-center justify-between mt-4 pt-3 border-t border-border-subtle text-xs text-text-muted">
         <span>{resource.provider} · {resource.duration}</span>
-        <Button variant="ghost" icon={ExternalLink} className="!px-3 !py-1.5">Open</Button>
+        <div className="flex gap-1">
+          {!resource.completed && <Button variant="ghost" icon={CheckCircle2} className="!px-3 !py-1.5" onClick={() => onComplete?.(resource.id)}>Complete</Button>}
+          {resource.url ? (
+            <a href={resource.url} target={isInternal ? '_self' : '_blank'} rel={isInternal ? undefined : 'noreferrer'}>
+              <Button variant="ghost" icon={ExternalLink} className="!px-3 !py-1.5">Open</Button>
+            </a>
+          ) : (
+            <Button variant="ghost" icon={ExternalLink} className="!px-3 !py-1.5" disabled title="No resource link is available">Unavailable</Button>
+          )}
+        </div>
       </div>
     </Card>
   )

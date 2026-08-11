@@ -122,11 +122,11 @@ export default function Landing() {
                 <WaveformVisualizer active bars={28} />
               </div>
               <div className="border-t border-border-subtle pt-4 grid grid-cols-2 gap-3">
-                <div className="surface-card !bg-black/[0.035] p-3">
+                <div className="surface-card !bg-white/[0.035] p-3">
                   <p className="text-[10px] text-text-muted">CAREER MATCH</p>
                   <p className="font-display font-bold text-text-primary mt-0.5">Backend Dev · 92%</p>
                 </div>
-                <div className="surface-card !bg-black/[0.035] p-3">
+                <div className="surface-card !bg-white/[0.035] p-3">
                   <p className="text-[10px] text-text-muted">READINESS TREND</p>
                   <p className="font-display font-bold text-success mt-0.5">+14 this week</p>
                 </div>
@@ -221,7 +221,7 @@ export default function Landing() {
               <div className="flex gap-0.5 text-warning mb-3">{Array.from({ length: 5 }).map((_, i) => <Star key={i} size={14} fill="currentColor" />)}</div>
               <p className="text-sm text-text-secondary leading-relaxed">&ldquo;{t.quote}&rdquo;</p>
               <div className="flex items-center gap-2.5 mt-4 pt-4 border-t border-border-subtle">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue to-cyan flex items-center justify-center text-[11px] font-semibold text-white">{t.name[0]}</div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue to-cyan flex items-center justify-center text-[11px] font-semibold text-black">{t.name[0]}</div>
                 <div>
                   <p className="text-xs font-medium text-text-primary">{t.name}</p>
                   <p className="text-[11px] text-text-muted">{t.role}</p>

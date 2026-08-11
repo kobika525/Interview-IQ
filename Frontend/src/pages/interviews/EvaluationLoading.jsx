@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import AIProcessingLoader from '../../components/interview/AIProcessingLoader'
 import { AlertCircle } from 'lucide-react'
 
-const STEPS = ['Processing answers', 'Analysing relevance', 'Checking technical keywords', 'Analysing communication', 'Preparing recommendations', 'Generating report']
+const STEPS = ['Processing answers', 'Validating Gemini analysis', 'Analysing technical accuracy', 'Analysing communication', 'Preparing recommendations', 'Generating report']
 const TIPS = [
   'Structure technical answers as: approach, trade-offs, example.',
   'Use the STAR method for behavioural questions.',

@@ -1,17 +1,23 @@
-import { PROGRESS_TREND, INTERVIEW_HISTORY } from '../data/mockData'
-import { delay } from '../utils/helpers'
+import api from './axios'
+import { unwrap } from './apiUtils'
 
 export async function getProgressOverview() {
-  await delay(500)
-  const scores = INTERVIEW_HISTORY.map((h) => h.score)
+  const data = unwrap(await api.get('/progress/dashboard'))
   return {
-    totalInterviews: INTERVIEW_HISTORY.length,
-    avgScore: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
-    highestScore: Math.max(...scores),
-    resumeImprovement: 22,
-    skillGrowth: 18,
-    streak: 5,
-    completedModules: 6,
-    trend: PROGRESS_TREND,
+    ...data,
+    totalInterviews: data.totalInterviews || data.interviewsCompleted || 0,
+    avgScore: data.averageScore || 0,
+    highestScore: data.highestScore || 0,
+    resumeImprovement: data.resumeImprovementPercentage || 0,
+    skillGrowth: data.skillGrowthPercentage || 0,
+    streak: data.currentStreak || 0,
+    completedModules: data.completedResources || 0,
+    trend: data.scoreTrend || [],
+    improvementTimeline: data.improvementTimeline || data.scoreTrend || [],
+    skillBreakdown: data.skillBreakdown || [],
+    voiceMetrics: data.voiceMetrics || {},
+    videoMetrics: data.videoMetrics || {},
+    aiFeedback: data.aiFeedback || {},
+    careerSuggestions: data.careerSuggestions || [],
   }
 }

@@ -10,8 +10,10 @@ import EmptyState from '../../components/common/EmptyState'
 import SkeletonLoader from '../../components/common/SkeletonLoader'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import Pagination from '../../components/common/Pagination'
+import Modal from '../../components/common/Modal'
 import * as resumeService from '../../services/resumeService'
 import { formatDate, scoreTone } from '../../utils/formatters'
+import toast from 'react-hot-toast'
 
 export default function ResumeHistory() {
   const [items, setItems] = useState([])
@@ -19,18 +21,38 @@ export default function ResumeHistory() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [toDelete, setToDelete] = useState(null)
+  const [selected, setSelected] = useState(null)
   const pageSize = 5
 
-  useEffect(() => { resumeService.getResumeHistory().then((d) => { setItems(d); setLoading(false) }) }, [])
+  useEffect(() => {
+    resumeService.getResumeHistory()
+      .then(setItems)
+      .catch((error) => toast.error(error.message))
+      .finally(() => setLoading(false))
+  }, [])
 
   const filtered = items.filter((r) => r.name.toLowerCase().includes(search.toLowerCase()))
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
   const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize)
 
   async function confirmDelete() {
-    await resumeService.deleteResume(toDelete.id)
-    setItems((prev) => prev.filter((i) => i.id !== toDelete.id))
-    setToDelete(null)
+    try {
+      await resumeService.deleteResume(toDelete.id)
+      setItems((prev) => prev.filter((i) => i.id !== toDelete.id))
+      setToDelete(null)
+      toast.success('Resume deleted')
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
+
+  async function viewResume(resume) {
+    try {
+      const analysis = resume.analysis || await resumeService.getResumeAnalysis(resume.id)
+      setSelected({ ...resume, analysis })
+    } catch (error) {
+      toast.error(error.message)
+    }
   }
 
   const columns = [
@@ -43,8 +65,8 @@ export default function ResumeHistory() {
     {
       key: 'actions', header: '', render: (r) => (
         <div className="flex gap-1.5">
-          <button className="btn-icon" aria-label="View"><Eye size={15} /></button>
-          <button className="btn-icon" aria-label="Download"><Download size={15} /></button>
+          <button className="btn-icon" aria-label="View" onClick={() => viewResume(r)}><Eye size={15} /></button>
+          <button className="btn-icon" aria-label="Download" onClick={() => resumeService.downloadResume(r.id, r.name).catch((error) => toast.error(error.message))}><Download size={15} /></button>
           <button className="btn-icon" aria-label="Delete" onClick={() => setToDelete(r)}><Trash2 size={15} /></button>
         </div>
       ),
@@ -73,7 +95,7 @@ export default function ResumeHistory() {
                 </div>
                 <p className="text-xs text-text-muted mt-1">{formatDate(r.uploadedAt)} · {r.skillsFound.length} skills found</p>
                 <div className="flex gap-2 mt-3">
-                  <Button variant="outline" className="!text-xs !py-1.5 flex-1">View</Button>
+                  <Button variant="outline" className="!text-xs !py-1.5 flex-1" onClick={() => viewResume(r)}>View</Button>
                   <Button variant="ghost" className="!text-xs !py-1.5" onClick={() => setToDelete(r)}><Trash2 size={13} /></Button>
                 </div>
               </Card>
@@ -87,6 +109,25 @@ export default function ResumeHistory() {
         open={Boolean(toDelete)} onClose={() => setToDelete(null)} onConfirm={confirmDelete}
         title="Delete resume analysis?" message={`This will permanently remove "${toDelete?.name}" from your history.`} confirmLabel="Delete"
       />
+      <Modal open={Boolean(selected)} onClose={() => setSelected(null)} title={selected?.name || 'Resume analysis'}>
+        {selected && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <Card><p className="text-xs text-text-muted">ATS score</p><p className="text-2xl font-bold text-text-primary mt-1">{selected.atsScore}/100</p></Card>
+              <Card><p className="text-xs text-text-muted">Status</p><Badge tone="success" className="mt-2">{selected.status}</Badge></Card>
+            </div>
+            <div>
+              <p className="field-label">Strengths</p>
+              <ul className="text-sm text-text-secondary space-y-1">{(selected.analysis?.strengths || []).map((item) => <li key={item}>• {item}</li>)}</ul>
+            </div>
+            <div>
+              <p className="field-label">Suggestions</p>
+              <ul className="text-sm text-text-secondary space-y-1">{(selected.analysis?.suggestions || []).map((item) => <li key={item}>• {item}</li>)}</ul>
+            </div>
+            <Button icon={Download} fullWidth onClick={() => resumeService.downloadResume(selected.id, selected.name)}>Download original resume</Button>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

@@ -26,8 +26,8 @@ export default function AdminAnalytics() {
         <DonutChartCard title="Interview mode usage" data={stats.modeUsage} />
       </div>
       <div className="grid lg:grid-cols-2 gap-5 mb-5">
-        <BarChartCard title="Role popularity" data={stats.popularRoles} nameKey="role" dataKey="count" color="#1EA7FF" />
-        <BarChartCard title="Weekly interview activity" data={stats.interviewActivity} nameKey="day" dataKey="interviews" color="#00D5FF" />
+        <BarChartCard title="Role popularity" data={stats.popularRoles} nameKey="role" dataKey="count" color="#B6FF3B" />
+        <BarChartCard title="Weekly interview activity" data={stats.interviewActivity} nameKey="day" dataKey="interviews" color="#D3FF73" />
       </div>
       <div className="grid lg:grid-cols-2 gap-5">
         <BarChartCard title="Resume analysis volume" data={stats.userGrowth.map((d) => ({ name: d.month, value: Math.round(d.users * 0.6) }))} color="#FF4964" />

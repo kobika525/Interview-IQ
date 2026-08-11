@@ -9,7 +9,7 @@ import * as billingService from '../../services/billingService'
 const FAQS = [
   { q: 'Can I cancel anytime?', a: 'Yes — cancel from Settings → Billing at any time. You keep access until the end of your current billing period.' },
   { q: 'What happens to my data if I downgrade?', a: 'Your resume analyses and interview history stay saved, but older reports beyond the Free plan limit become read-only until you upgrade again.' },
-  { q: 'Do you offer a free trial of Premium?', a: 'The Free plan itself works as an ongoing trial — 3 resume scans and text/voice interviews, no time limit and no card required.' },
+  { q: 'Do you offer a free trial of Basic?', a: 'The Free plan itself works as an ongoing trial — 3 resume scans and text/voice interviews, no time limit and no card required.' },
   { q: 'Is yearly billing available?', a: 'Yes, toggle "Billed yearly" above for a discount equivalent to two months free.' },
 ]
 
@@ -40,11 +40,11 @@ export default function Pricing() {
         <h1 className="font-display font-bold text-3xl md:text-4xl text-text-primary mt-4">Simple plans, real preparation</h1>
         <p className="text-text-secondary mt-3">Start free. Upgrade when you want unlimited practice and full video interviews.</p>
 
-        <div className="inline-flex items-center gap-1 mt-6 p-1 rounded-full bg-black/[0.045] border border-border-subtle">
+        <div className="inline-flex items-center gap-1 mt-6 p-1 rounded-full bg-white/[0.055] border border-border-subtle">
           {['month', 'year'].map((c) => (
             <button
               key={c} onClick={() => setCycle(c)}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${cycle === c ? 'bg-blue text-white' : 'text-text-muted'}`}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${cycle === c ? 'bg-blue text-black' : 'text-text-muted'}`}
             >
               Billed {c === 'month' ? 'monthly' : 'yearly'} {c === 'year' && <span className="text-cyan">· save 2 months</span>}
             </button>
@@ -55,7 +55,7 @@ export default function Pricing() {
       {plans.length === 0 ? (
         <div className="mt-12"><SkeletonLoader rows={2} /></div>
       ) : (
-        <div className="grid md:grid-cols-3 gap-5 mt-12">
+        <div className="grid md:grid-cols-3 gap-6 mt-12 pt-3">
           {plans.map((p) => <PricingCard key={p.id} plan={p} currentPlan={user?.plan} billingCycle={cycle} />)}
         </div>
       )}

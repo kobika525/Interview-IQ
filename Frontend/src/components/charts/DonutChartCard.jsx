@@ -1,7 +1,7 @@
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts'
 import ChartCard from '../common/ChartCard'
 
-const PALETTE = ['#1EA7FF', '#00D5FF', '#FF4964', '#F59E0B']
+const PALETTE = ['#B6FF3B', '#D3FF73', '#89CC16', '#6D9E1B']
 
 export default function DonutChartCard({ title, subtitle, data, height = 240 }) {
   return (

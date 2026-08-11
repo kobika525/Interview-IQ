@@ -1,30 +1,18 @@
-import { Outlet } from 'react-router-dom'
-import { Sparkles } from 'lucide-react'
-import AuthIllustration from '../components/auth/AuthIllustration'
-import Logo from '../components/common/Logo'
+import { Outlet, useLocation } from 'react-router-dom'
 
 export default function AuthLayout() {
+  const { pathname } = useLocation()
+  const isRegister = pathname === '/register'
+
   return (
-    <div className="min-h-screen bg-blue-50 flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
-      <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-cyan-50 blur-3xl opacity-70" />
-      <div className="absolute -bottom-32 -right-16 w-96 h-96 rounded-full bg-blue-50 blur-3xl opacity-70" />
-
-      <div className="relative w-full max-w-[1100px] min-h-[650px] rounded-[28px] overflow-hidden shadow-lg bg-white flex flex-col md:flex-row">
-        {/* Mobile-only compact header */}
-        <div className="md:hidden flex flex-col items-center pt-8 pb-2 px-6">
-          <Logo size="sm" to={null} />
-          <div className="w-20 h-20 mt-4 rounded-2xl bg-gradient-to-br from-blue/30 to-cyan/30 flex items-center justify-center animate-pulse-glow">
-            <Sparkles size={26} className="text-cyan" />
-          </div>
+    <div className="min-h-screen bg-app flex items-center justify-center p-4 sm:p-8">
+      <div className={`w-full ${isRegister ? 'max-w-[680px]' : 'max-w-[420px]'} overflow-hidden rounded-2xl border border-border bg-card shadow-[0_24px_70px_rgba(0,0,0,0.65)]`}>
+        <div className="border-b border-border-subtle bg-card-2 px-7 py-5 text-center">
+          <h1 className="font-display text-2xl font-bold text-text-primary">
+            {isRegister ? 'Register Form' : 'Login Form'}
+          </h1>
         </div>
-
-        <div className="hidden md:block md:w-[48%] bg-gradient-to-br from-cyan-50 to-blue-50 flex items-center justify-center p-8">
-          <div className="max-w-[420px] w-full">
-            <AuthIllustration />
-          </div>
-        </div>
-
-        <div className="w-full md:w-[52%] p-6 sm:p-10 md:p-12 flex flex-col justify-center">
+        <div className="auth-form-theme p-6 sm:p-8">
           <Outlet />
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { FileText, Mic, Video, RotateCcw } from 'lucide-react'
+import { FileText, Mic, Video } from 'lucide-react'
 import PageHeader from '../../components/common/PageHeader'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
@@ -80,7 +80,7 @@ export default function Subscription() {
 
       <h3 className="font-display font-semibold text-text-primary mb-3">Compare plans</h3>
       {plans.length === 0 ? <SkeletonLoader rows={2} /> : (
-        <div className="grid md:grid-cols-3 gap-5">
+        <div className="grid md:grid-cols-3 gap-6 pt-3">
           {plans.map((p) => <PricingCard key={p.id} plan={p} currentPlan={user?.plan} />)}
         </div>
       )}

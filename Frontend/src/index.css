@@ -6,122 +6,109 @@
   --font-sans: 'Inter', sans-serif;
 
   /* Auth outer */
-  --color-auth-bg: #DDF2FF;
-  --color-auth-decor: #CBEAFF;
-  --color-auth-dark: #0B1020;
+  --color-auth-bg: #080908;
+  --color-auth-decor: #11140d;
+  --color-auth-dark: #050605;
 
   /* App backgrounds — soft mint-to-lavender pastel theme */
-  --color-app: #EEF6F3;
-  --color-app-2: #F2EEFB;
-  --color-sidebar: #FFFFFF;
-  --color-topnav: #FFFFFF;
+  --color-app: #080908;
+  --color-app-2: #0c0e0b;
+  --color-sidebar: #0a0b0a;
+  --color-topnav: #090a09;
 
   /* Cards */
-  --color-card: #FFFFFF;
-  --color-card-2: #FAFAFE;
-  --color-card-elevated: #FFFFFF;
+  --color-card: #0f110f;
+  --color-card-2: #131613;
+  --color-card-elevated: #151815;
 
   /* Inputs */
-  --color-input: #F3F5FA;
-  --color-input-hover: #EAEDFA;
+  --color-input: #111411;
+  --color-input-hover: #171b16;
 
   /* Borders */
-  --color-border: #E1E6F5;
-  --color-border-subtle: #EAEDF9;
+  --color-border: #2b3028;
+  --color-border-subtle: #20241f;
 
   /* Text */
-  --color-text-primary: #1E2438;
-  --color-text-secondary: #545E7A;
-  --color-text-muted: #8991AC;
-  --color-text-disabled: #B7BECF;
+  --color-text-primary: #F5F7F2;
+  --color-text-secondary: #B5BBB0;
+  --color-text-muted: #777e73;
+  --color-text-disabled: #50554d;
 
   /* Brand */
-  --color-blue: #1EA7FF;
-  --color-cyan: #00C2C7;
-  --color-blue-deep: #065DFF;
-  --color-coral: #FF4964;
-  --color-coral-hover: #FF2D4E;
+  --color-blue: #B6FF3B;
+  --color-cyan: #D3FF73;
+  --color-blue-deep: #89CC16;
+  --color-coral: #B6FF3B;
+  --color-coral-hover: #C8FF63;
+  --color-button-green: #B6FF3B;
+  --color-button-green-hover: #C8FF63;
+  --color-button-green-soft: #17220d;
 
   /* Status */
-  --color-success: #22C55E;
+  --color-success: #AEEA3A;
   --color-warning: #F59E0B;
   --color-error: #EF4444;
   --color-info: #38BDF8;
 }
 
-/* Theme transition helper (applied briefly when toggling) */
-.theme-transition * {
-  transition: background-color .28s ease, color .28s ease, border-color .28s ease, box-shadow .28s ease;
-}
-
-/* Dark theme overrides (simple, covers common variables) */
-.dark {
-  --color-app: #071126;
-  --color-app-2: #0b1530;
-  --color-sidebar: #06070a;
-  --color-topnav: #071126;
-
-  --color-card: #071226;
-  --color-card-2: #0a1220;
-  --color-card-elevated: #06121b;
-
-  --color-input: #0b1220;
-  --color-input-hover: #09121a;
-
-  --color-border: #0f1720;
-  --color-border-subtle: #0b1220;
-
-  --color-text-primary: #E6EEF8;
-  --color-text-secondary: #A8B4C8;
-  --color-text-muted: #8B98AB;
-  --color-text-disabled: #6D7A89;
-
-  --color-blue: #60A5FA;
-  --color-cyan: #34D4D0;
-  --color-blue-deep: #60A5FA;
-  --color-coral: #A3E635; /* lime-400 */
-  --color-coral-hover: #84CC16; /* lime-500 */
-}
-
 body {
-  background: linear-gradient(135deg, #E4F9F1 0%, #EFEFFB 48%, #FBEAF2 100%);
+  background-color: #080908;
+  background-image:
+    linear-gradient(rgba(182, 255, 59, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(182, 255, 59, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at 50% 0%, rgba(182, 255, 59, 0.075), transparent 38%);
+  background-size: 80px 80px, 80px 80px, 100% 100%;
   background-attachment: fixed;
   color: var(--color-text-primary);
   font-family: var(--font-sans);
 }
 
+body .bg-app {
+  background-color: var(--color-app);
+  background-image:
+    linear-gradient(rgba(182, 255, 59, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(182, 255, 59, 0.022) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+::selection {
+  background: rgba(182, 255, 59, 0.3);
+  color: #ffffff;
+}
+
 @layer components {
   /* Buttons */
   .btn-coral {
-    @apply bg-coral text-slate-950 font-semibold rounded-xl px-5 py-3 transition-all duration-200
-    hover:bg-coral-hover hover:shadow-[0_12px_30px_-18px_rgba(132,204,22,0.45)] hover:-translate-y-0.5
+    @apply bg-button-green text-black font-semibold rounded-xl px-5 py-3 transition-all duration-200
+    hover:bg-button-green-hover hover:shadow-[0_0_30px_rgba(182,255,59,0.3)] hover:-translate-y-0.5
     active:translate-y-0 disabled:opacity-50 disabled:pointer-events-none;
   }
   .btn-outline {
-    @apply bg-white text-text-primary font-semibold rounded-xl px-5 py-3 border border-border
-    transition-all duration-200 hover:border-blue hover:text-blue disabled:opacity-50;
+    @apply bg-transparent text-text-primary font-semibold rounded-xl px-5 py-3 border border-border
+    transition-all duration-200 hover:bg-button-green-soft hover:border-button-green hover:text-button-green disabled:opacity-50;
   }
   .btn-ghost {
-    @apply bg-black/[0.03] text-text-secondary font-medium rounded-xl px-4 py-2.5 border border-border-subtle
-    transition-all duration-200 hover:bg-black/[0.05] hover:text-text-primary;
+    @apply bg-transparent text-text-secondary font-medium rounded-xl px-4 py-2.5 border border-border-subtle
+    transition-all duration-200 hover:bg-button-green-soft hover:border-button-green/30 hover:text-button-green;
   }
   .btn-icon {
-    @apply w-10 h-10 flex items-center justify-center rounded-lg text-text-muted border border-transparent
-    hover:bg-black/[0.04] hover:text-text-primary transition-colors;
+    @apply w-10 h-10 flex items-center justify-center rounded-lg text-text-secondary border border-transparent
+    hover:bg-button-green-soft hover:text-button-green transition-colors;
   }
 
   /* Surfaces */
   .surface-card {
-    @apply bg-card border border-border-subtle rounded-2xl shadow-[0_4px_20px_-8px_rgba(80,90,150,0.14)];
+    @apply bg-card border border-border-subtle rounded-2xl shadow-[0_12px_40px_-24px_rgba(0,0,0,0.9)];
   }
   .surface-card-elevated {
-    @apply bg-card-elevated border border-border rounded-2xl shadow-[0_12px_32px_-10px_rgba(80,90,150,0.22)];
+    @apply bg-card-elevated border border-border rounded-2xl shadow-[0_18px_55px_-24px_rgba(0,0,0,0.95)];
   }
   .glass {
-    @apply bg-white/60 backdrop-blur-xl border border-white/50 rounded-2xl shadow-[0_8px_30px_-10px_rgba(80,90,150,0.25)];
+    @apply bg-card/75 backdrop-blur-xl border border-border rounded-2xl shadow-[0_16px_50px_-24px_rgba(0,0,0,0.95)];
   }
   .glow-border {
-    box-shadow: 0 0 0 1px rgba(30,167,255,0.2), 0 0 24px -4px rgba(0,194,199,0.25);
+    box-shadow: 0 0 0 1px rgba(182,255,59,0.25), 0 0 28px -6px rgba(182,255,59,0.28);
   }
 
   /* Inputs */
@@ -135,6 +122,28 @@ body {
   .field-error {
     @apply text-xs text-error mt-1.5;
   }
+  .themed-select {
+    color-scheme: dark;
+    background-image: linear-gradient(180deg, rgba(255,255,255,0.018), transparent);
+  }
+  .themed-select:disabled {
+    @apply cursor-not-allowed text-text-disabled opacity-60;
+  }
+  .themed-select option,
+  .themed-select optgroup {
+    color: var(--color-text-primary);
+    background: var(--color-card-elevated);
+  }
+  .themed-select option {
+    padding: 10px 12px;
+  }
+  .auth-form-theme .field {
+    @apply rounded-full bg-input border-border px-5 text-text-primary placeholder:text-text-muted
+    hover:bg-input-hover focus:border-button-green focus:ring-button-green/15;
+  }
+  .auth-form-theme .field-label {
+    @apply text-text-secondary;
+  }
 
   /* Badges */
   .badge {
@@ -143,7 +152,7 @@ body {
 
   .nav-link {
     @apply flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-text-muted
-    transition-colors hover:bg-black/[0.04] hover:text-text-primary;
+    transition-colors hover:bg-white/[0.04] hover:text-text-primary;
   }
   .nav-link-active {
     @apply bg-blue/10 text-blue relative;

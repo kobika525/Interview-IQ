@@ -10,7 +10,7 @@ export default function PasswordStrengthMeter({ password }) {
     <div className="mt-2">
       <div className="flex gap-1.5">
         {[0, 1, 2, 3].map((i) => (
-          <span key={i} className={`h-1 flex-1 rounded-full ${i < score ? COLORS[score] : 'bg-black/[0.08]'}`} />
+          <span key={i} className={`h-1 flex-1 rounded-full ${i < score ? COLORS[score] : 'bg-white/[0.08]'}`} />
         ))}
       </div>
       <p className="text-[11px] text-text-muted mt-1">{LABELS[score]}</p>

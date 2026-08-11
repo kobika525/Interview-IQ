@@ -6,11 +6,18 @@ export const loginSchema = z.object({
   remember: z.boolean().optional(),
 })
 
+const strongPassword = z.string()
+  .min(8, 'Password must be at least 8 characters')
+  .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+  .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+  .regex(/[0-9]/, 'Password must contain at least one number')
+  .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character')
+
 export const registerSchema = z
   .object({
     fullName: z.string().min(2, 'Enter your full name'),
     email: z.string().min(1, 'Email is required').email('Enter a valid email address'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
+    password: strongPassword,
     confirmPassword: z.string().min(8, 'Please confirm your password'),
     degree: z.string().min(1, 'Select your degree'),
     institute: z.string().min(1, 'Enter your university or institute'),
@@ -29,7 +36,7 @@ export const forgotPasswordSchema = z.object({
 
 export const resetPasswordSchema = z
   .object({
-    password: z.string().min(8, 'Password must be at least 8 characters'),
+    password: strongPassword,
     confirmPassword: z.string().min(8, 'Please confirm your password'),
   })
   .refine((data) => data.password === data.confirmPassword, {

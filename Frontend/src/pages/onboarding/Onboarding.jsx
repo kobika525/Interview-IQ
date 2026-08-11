@@ -7,7 +7,6 @@ import Button from '../../components/common/Button'
 import Select from '../../components/common/Select'
 import RadioGroup from '../../components/common/RadioGroup'
 import MultiSelect from '../../components/common/MultiSelect'
-import Badge from '../../components/common/Badge'
 import Logo from '../../components/common/Logo'
 import { JOB_ROLES, STUDY_LEVELS, INTERVIEW_MODES } from '../../utils/constants'
 import { useAuth } from '../../hooks/useAuth'
@@ -46,7 +45,7 @@ export default function Onboarding() {
           {STEP_TITLES.map((label, i) => (
             <div key={label} className={cx(
               'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold',
-              i === step ? 'bg-blue text-white' : i < step ? 'bg-success/15 text-success' : 'bg-black/[0.045] text-text-muted'
+              i === step ? 'bg-blue text-black' : i < step ? 'bg-success/15 text-success' : 'bg-white/[0.055] text-text-muted'
             )}>
               {i < step ? <Check size={10} /> : i + 1}
               <span className="hidden sm:inline">{label}</span>

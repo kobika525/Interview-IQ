@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Plus, Pencil, Trash2, Briefcase } from 'lucide-react'
+import toast from 'react-hot-toast'
 import PageHeader from '../../components/common/PageHeader'
 import SearchBar from '../../components/common/SearchBar'
 import DataTable from '../../components/common/DataTable'
-import Card from '../../components/common/Card'
 import Badge from '../../components/common/Badge'
 import Button from '../../components/common/Button'
 import Modal from '../../components/common/Modal'
@@ -11,75 +11,71 @@ import Input from '../../components/common/Input'
 import Textarea from '../../components/common/Textarea'
 import EmptyState from '../../components/common/EmptyState'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
-import { CAREERS } from '../../data/careerData'
-import { randomId } from '../../utils/helpers'
-import toast from 'react-hot-toast'
+import * as adminService from '../../services/adminService'
+
+const emptyForm = { title: '', description: '', demandLevel: 'Medium', estimatedLearningDurationWeeks: 8 }
 
 export default function AdminCareerRoles() {
-  const [roles, setRoles] = useState(CAREERS)
+  const [roles, setRoles] = useState([])
   const [search, setSearch] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [toDelete, setToDelete] = useState(null)
-  const [form, setForm] = useState({ title: '', summary: '', requiredSkills: '', demand: '', duration: '' })
+  const [form, setForm] = useState(emptyForm)
 
-  const filtered = roles.filter((r) => r.title.toLowerCase().includes(search.toLowerCase()))
+  const load = () => adminService.getAdminCareerRoles().then(setRoles)
+  useEffect(() => { load() }, [])
+  const filtered = roles.filter((role) => (role.title || '').toLowerCase().includes(search.toLowerCase()))
 
-  function openAdd() { setEditing(null); setForm({ title: '', summary: '', requiredSkills: '', demand: '', duration: '' }); setModalOpen(true) }
-  function openEdit(r) { setEditing(r); setForm({ ...r, requiredSkills: r.requiredSkills.join(', ') }); setModalOpen(true) }
-
-  function save() {
-    if (editing) {
-      setRoles((prev) => prev.map((r) => (r.id === editing.id ? { ...r, ...form, requiredSkills: form.requiredSkills.split(',').map((s) => s.trim()) } : r)))
-      toast.success('Career role updated')
-    } else {
-      setRoles((prev) => [{ id: randomId('role'), match: 0, matchedSkills: [], missingSkills: [], difficulty: 'Intermediate', ...form, requiredSkills: form.requiredSkills.split(',').map((s) => s.trim()) }, ...prev])
-      toast.success('Career role added')
+  async function save() {
+    const payload = {
+      title: form.title,
+      description: form.description || null,
+      demand_level: form.demandLevel,
+      estimated_learning_duration_weeks: Number(form.estimatedLearningDurationWeeks) || 8,
+      experience_level: form.experienceLevel || 'BEGINNER',
     }
+    if (editing) await adminService.updateAdminCareerRole(editing.id, payload)
+    else await adminService.createAdminCareerRole({ ...payload, required_skills: [], recommended_skills: [] })
+    await load()
     setModalOpen(false)
+    toast.success(editing ? 'Career role updated' : 'Career role added')
+  }
+
+  async function remove() {
+    await adminService.deleteAdminCareerRole(toDelete.id)
+    setToDelete(null)
+    await load()
   }
 
   const columns = [
-    { key: 'title', header: 'Role', render: (r) => <span className="text-text-primary font-medium">{r.title}</span> },
-    { key: 'demand', header: 'Demand', render: (r) => <Badge tone={r.demand === 'High' ? 'success' : 'warning'}>{r.demand}</Badge> },
-    { key: 'duration', header: 'Learning duration' },
-    { key: 'requiredSkills', header: 'Required skills', render: (r) => r.requiredSkills.length },
+    { key: 'title', header: 'Role' },
+    { key: 'demandLevel', header: 'Demand', render: (role) => <Badge tone={role.demandLevel === 'High' ? 'success' : 'warning'}>{role.demandLevel}</Badge> },
+    { key: 'estimatedLearningDurationWeeks', header: 'Learning duration', render: (role) => `${role.estimatedLearningDurationWeeks} weeks` },
     { key: 'status', header: 'Status', render: () => <Badge tone="success">Active</Badge> },
-    {
-      key: 'actions', header: '', render: (r) => (
-        <div className="flex gap-1.5">
-          <button className="btn-icon" onClick={() => openEdit(r)} aria-label="Edit"><Pencil size={15} /></button>
-          <button className="btn-icon" onClick={() => setToDelete(r)} aria-label="Delete"><Trash2 size={15} /></button>
-        </div>
-      ),
-    },
+    { key: 'actions', header: '', render: (role) => (
+      <div className="flex gap-1.5">
+        <button className="btn-icon" onClick={() => { setEditing(role); setForm(role); setModalOpen(true) }} aria-label="Edit"><Pencil size={15} /></button>
+        <button className="btn-icon" onClick={() => setToDelete(role)} aria-label="Delete"><Trash2 size={15} /></button>
+      </div>
+    ) },
   ]
 
   return (
     <div>
-      <PageHeader title="Career Roles" subtitle="Manage the career roles used in matching and guidance." actions={<Button icon={Plus} onClick={openAdd}>Add role</Button>} />
+      <PageHeader title="Career Roles" subtitle="Manage live career matching roles." actions={<Button icon={Plus} onClick={() => { setEditing(null); setForm(emptyForm); setModalOpen(true) }}>Add role</Button>} />
       <SearchBar value={search} onChange={setSearch} placeholder="Search roles..." className="max-w-xs mb-5" />
-
-      {filtered.length === 0 ? <EmptyState icon={Briefcase} title="No roles found" /> : (
-        <DataTable columns={columns} data={filtered} renderMobileCard={(r) => (
-          <Card><p className="text-sm font-medium text-text-primary">{r.title}</p><p className="text-xs text-text-muted mt-1">{r.demand} demand · {r.duration}</p></Card>
-        )} />
-      )}
-
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit career role' : 'Add career role'} size="lg"
-        footer={<><Button variant="ghost" onClick={() => setModalOpen(false)}>Cancel</Button><Button onClick={save}>{editing ? 'Save changes' : 'Add role'}</Button></>}>
+      {filtered.length ? <DataTable columns={columns} data={filtered} /> : <EmptyState icon={Briefcase} title="No roles found" />}
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit career role' : 'Add career role'}
+        footer={<><Button variant="ghost" onClick={() => setModalOpen(false)}>Cancel</Button><Button onClick={save}>Save</Button></>}>
         <div className="space-y-4">
-          <Input label="Role title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-          <Textarea label="Description" rows={2} value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} />
-          <Input label="Required skills (comma-separated)" value={form.requiredSkills} onChange={(e) => setForm({ ...form, requiredSkills: e.target.value })} />
-          <div className="grid sm:grid-cols-2 gap-4">
-            <Input label="Demand (High / Medium / Low)" value={form.demand} onChange={(e) => setForm({ ...form, demand: e.target.value })} />
-            <Input label="Learning duration" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} />
-          </div>
+          <Input label="Role title" value={form.title || ''} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+          <Textarea label="Description" rows={3} value={form.description || ''} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          <Input label="Demand level" value={form.demandLevel || ''} onChange={(e) => setForm({ ...form, demandLevel: e.target.value })} />
+          <Input label="Learning duration (weeks)" type="number" value={form.estimatedLearningDurationWeeks || 8} onChange={(e) => setForm({ ...form, estimatedLearningDurationWeeks: e.target.value })} />
         </div>
       </Modal>
-
-      <ConfirmDialog open={Boolean(toDelete)} onClose={() => setToDelete(null)} onConfirm={() => { setRoles((p) => p.filter((r) => r.id !== toDelete.id)); setToDelete(null) }}
+      <ConfirmDialog open={Boolean(toDelete)} onClose={() => setToDelete(null)} onConfirm={remove}
         title="Delete career role?" message="This role will no longer appear in career matching." confirmLabel="Delete" />
     </div>
   )

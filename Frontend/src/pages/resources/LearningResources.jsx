@@ -7,6 +7,7 @@ import ResourceCard from '../../components/resources/ResourceCard'
 import EmptyState from '../../components/common/EmptyState'
 import SkeletonLoader from '../../components/common/SkeletonLoader'
 import * as resourceService from '../../services/resourceService'
+import toast from 'react-hot-toast'
 
 const TYPES = ['Course', 'Article', 'Video', 'Documentation', 'Coding Exercise', 'Interview Questions']
 const DIFFICULTIES = ['Beginner', 'Intermediate', 'Advanced']
@@ -18,10 +19,33 @@ export default function LearningResources() {
   const [type, setType] = useState('')
   const [difficulty, setDifficulty] = useState('')
 
-  useEffect(() => { resourceService.getResources().then((d) => { setItems(d); setLoading(false) }) }, [])
+  useEffect(() => {
+    resourceService.getResources()
+      .then(setItems)
+      .catch((error) => toast.error(error.message))
+      .finally(() => setLoading(false))
+  }, [])
 
-  function toggleBookmark(id) {
-    setItems((prev) => prev.map((r) => (r.id === id ? { ...r, bookmarked: !r.bookmarked } : r)))
+  async function toggleBookmark(id) {
+    const resource = items.find((item) => item.id === id)
+    const bookmarked = !resource.bookmarked
+    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, bookmarked } : item)))
+    try {
+      await resourceService.setResourceBookmarked(id, bookmarked)
+    } catch (error) {
+      setItems((prev) => prev.map((item) => (item.id === id ? { ...item, bookmarked: !bookmarked } : item)))
+      toast.error(error.message)
+    }
+  }
+
+  async function complete(id) {
+    try {
+      await resourceService.completeResource(id)
+      setItems((prev) => prev.map((item) => (item.id === id ? { ...item, completed: true } : item)))
+      toast.success('Resource marked complete')
+    } catch (error) {
+      toast.error(error.message)
+    }
   }
 
   const filtered = items.filter((r) =>
@@ -44,7 +68,7 @@ export default function LearningResources() {
         <EmptyState icon={BookOpen} title="No resources found" message="Try a different search or filter." />
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filtered.map((r) => <ResourceCard key={r.id} resource={r} onBookmark={toggleBookmark} />)}
+          {filtered.map((r) => <ResourceCard key={r.id} resource={r} onBookmark={toggleBookmark} onComplete={complete} />)}
         </div>
       )}
     </div>

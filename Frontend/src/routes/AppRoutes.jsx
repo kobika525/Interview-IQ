@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 
 import PublicLayout from '../layouts/PublicLayout'
@@ -8,69 +9,64 @@ import AdminLayout from '../layouts/AdminLayout'
 import ProtectedRoute from './ProtectedRoute'
 import GuestRoute from './GuestRoute'
 import AdminRoute from './AdminRoute'
-import PremiumRoute from './PremiumRoute'
 
-import Landing from '../pages/public/Landing'
-import About from '../pages/public/About'
-import Features from '../pages/public/Features'
-import Pricing from '../pages/public/Pricing'
-import Contact from '../pages/public/Contact'
-import FAQ from '../pages/public/FAQ'
-import Privacy from '../pages/public/Privacy'
-import Terms from '../pages/public/Terms'
-import NotFound from '../pages/public/NotFound'
-
-import Login from '../pages/auth/Login'
-import Register from '../pages/auth/Register'
-import ForgotPassword from '../pages/auth/ForgotPassword'
-import ResetPassword from '../pages/auth/ResetPassword'
-import VerifyEmail from '../pages/auth/VerifyEmail'
-import VerifyEmailSuccess from '../pages/auth/VerifyEmailSuccess'
-
-import Onboarding from '../pages/onboarding/Onboarding'
-
-import Dashboard from '../pages/dashboard/Dashboard'
-import ResumeAnalyzer from '../pages/resume/ResumeAnalyzer'
-import ResumeHistory from '../pages/resume/ResumeHistory'
-import CareerGuidance from '../pages/career/CareerGuidance'
-import SkillGapAnalysis from '../pages/skillGap/SkillGapAnalysis'
-import InterviewHome from '../pages/interviews/InterviewHome'
-import InterviewSetup from '../pages/interviews/InterviewSetup'
-import TextInterview from '../pages/interviews/TextInterview'
-import VoiceInterview from '../pages/interviews/VoiceInterview'
-import VideoInterview from '../pages/interviews/VideoInterview'
-import EvaluationLoading from '../pages/interviews/EvaluationLoading'
-import InterviewHistory from '../pages/interviews/InterviewHistory'
-import InterviewReport from '../pages/reports/InterviewReport'
-import LearningRoadmap from '../pages/roadmap/LearningRoadmap'
-import LearningResources from '../pages/resources/LearningResources'
-import Progress from '../pages/progress/Progress'
-import Notifications from '../pages/notifications/Notifications'
-import Profile from '../pages/profile/Profile'
-import Settings from '../pages/settings/Settings'
-import Subscription from '../pages/subscription/Subscription'
-import Billing from '../pages/billing/Billing'
-import Checkout from '../pages/billing/Checkout'
-import Support from '../pages/support/Support'
-
-import AdminDashboard from '../pages/admin/AdminDashboard'
-import AdminUsers from '../pages/admin/AdminUsers'
-import AdminQuestions from '../pages/admin/AdminQuestions'
-import AdminCareerRoles from '../pages/admin/AdminCareerRoles'
-import AdminResources from '../pages/admin/AdminResources'
-import AdminSubscriptions from '../pages/admin/AdminSubscriptions'
-import AdminInterviews from '../pages/admin/AdminInterviews'
-import AdminReports from '../pages/admin/AdminReports'
-import AdminAnalytics from '../pages/admin/AdminAnalytics'
-import AdminSettings from '../pages/admin/AdminSettings'
-
-import Forbidden from '../pages/system/Forbidden'
-import ServerError from '../pages/system/ServerError'
-import Offline from '../pages/system/Offline'
-import Maintenance from '../pages/system/Maintenance'
+const pageModules = import.meta.glob('../pages/**/*.jsx')
+const page = (path) => lazy(pageModules[`${path}.jsx`])
+const Landing = page('../pages/public/Landing')
+const About = page('../pages/public/About')
+const Features = page('../pages/public/Features')
+const Pricing = page('../pages/public/Pricing')
+const Contact = page('../pages/public/Contact')
+const FAQ = page('../pages/public/FAQ')
+const Privacy = page('../pages/public/Privacy')
+const Terms = page('../pages/public/Terms')
+const NotFound = page('../pages/public/NotFound')
+const Login = page('../pages/auth/Login')
+const Register = page('../pages/auth/Register')
+const ForgotPassword = page('../pages/auth/ForgotPassword')
+const ResetPassword = page('../pages/auth/ResetPassword')
+const Onboarding = page('../pages/onboarding/Onboarding')
+const Dashboard = page('../pages/dashboard/Dashboard')
+const ResumeAnalyzer = page('../pages/resume/ResumeAnalyzer')
+const ResumeHistory = page('../pages/resume/ResumeHistory')
+const CareerGuidance = page('../pages/career/CareerGuidance')
+const SkillGapAnalysis = page('../pages/skillGap/SkillGapAnalysis')
+const InterviewHome = page('../pages/interviews/InterviewHome')
+const InterviewSetup = page('../pages/interviews/InterviewSetup')
+const TextInterview = page('../pages/interviews/TextInterview')
+const VoiceInterview = page('../pages/interviews/VoiceInterview')
+const VideoInterview = page('../pages/interviews/VideoInterview')
+const EvaluationLoading = page('../pages/interviews/EvaluationLoading')
+const InterviewHistory = page('../pages/interviews/InterviewHistory')
+const InterviewReport = page('../pages/reports/InterviewReport')
+const LearningRoadmap = page('../pages/roadmap/LearningRoadmap')
+const LearningResources = page('../pages/resources/LearningResources')
+const Progress = page('../pages/progress/Progress')
+const Notifications = page('../pages/notifications/Notifications')
+const Profile = page('../pages/profile/Profile')
+const Settings = page('../pages/settings/Settings')
+const Subscription = page('../pages/subscription/Subscription')
+const Billing = page('../pages/billing/Billing')
+const Checkout = page('../pages/billing/Checkout')
+const Support = page('../pages/support/Support')
+const AdminDashboard = page('../pages/admin/AdminDashboard')
+const AdminUsers = page('../pages/admin/AdminUsers')
+const AdminQuestions = page('../pages/admin/AdminQuestions')
+const AdminCareerRoles = page('../pages/admin/AdminCareerRoles')
+const AdminResources = page('../pages/admin/AdminResources')
+const AdminSubscriptions = page('../pages/admin/AdminSubscriptions')
+const AdminInterviews = page('../pages/admin/AdminInterviews')
+const AdminReports = page('../pages/admin/AdminReports')
+const AdminAnalytics = page('../pages/admin/AdminAnalytics')
+const AdminSettings = page('../pages/admin/AdminSettings')
+const Forbidden = page('../pages/system/Forbidden')
+const ServerError = page('../pages/system/ServerError')
+const Offline = page('../pages/system/Offline')
+const Maintenance = page('../pages/system/Maintenance')
 
 export default function AppRoutes() {
   return (
+    <Suspense fallback={<div className="min-h-screen grid place-items-center text-text-muted">Loading…</div>}>
     <Routes>
       {/* Public website */}
       <Route element={<PublicLayout />}>
@@ -91,8 +87,6 @@ export default function AppRoutes() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
-          <Route path="/verify-email-success" element={<VerifyEmailSuccess />} />
         </Route>
       </Route>
 
@@ -106,13 +100,12 @@ export default function AppRoutes() {
         <Route path="/app/interviews/text/:id" element={<TextInterview />} />
         <Route path="/app/interviews/voice/:id" element={<VoiceInterview />} />
         <Route path="/app/interviews/processing/:id" element={<EvaluationLoading />} />
-        <Route element={<PremiumRoute />}>
-          <Route path="/app/interviews/video/:id" element={<VideoInterview />} />
-        </Route>
+        <Route path="/app/interviews/video/:id" element={<VideoInterview />} />
       </Route>
 
       {/* Main user application */}
       <Route element={<ProtectedRoute />}>
+        <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
         <Route element={<AppLayout />}>
           <Route path="/app/dashboard" element={<Dashboard />} />
           <Route path="/app/resume-analyzer" element={<ResumeAnalyzer />} />
@@ -160,5 +153,6 @@ export default function AppRoutes() {
       <Route path="/maintenance" element={<Maintenance />} />
       <Route path="*" element={<Navigate to="/404" replace />} />
     </Routes>
+    </Suspense>
   )
 }

@@ -15,9 +15,9 @@ export default function NotificationItem({ notification, onRead, onDelete }) {
   return (
     <div
       onClick={() => !notification.read && onRead?.(notification.id)}
-      className={`flex gap-3 p-3.5 rounded-xl cursor-pointer transition-colors ${notification.read ? 'hover:bg-black/[0.035]' : 'bg-blue/5 hover:bg-blue/10'}`}
+      className={`flex gap-3 p-3.5 rounded-xl cursor-pointer transition-colors ${notification.read ? 'hover:bg-white/[0.035]' : 'bg-blue/5 hover:bg-blue/10'}`}
     >
-      <div className="w-9 h-9 rounded-lg bg-black/[0.045] text-blue flex items-center justify-center shrink-0">
+      <div className="w-9 h-9 rounded-lg bg-white/[0.055] text-blue flex items-center justify-center shrink-0">
         <Icon size={16} />
       </div>
       <div className="min-w-0 flex-1">

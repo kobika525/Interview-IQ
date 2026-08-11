@@ -34,16 +34,15 @@ export default function Billing() {
   }
 
   async function reactivate() {
-    const result = await billingService.subscribe({ planId: 'premium', card })
-    updateUser({ plan: result.plan, planRenewsAt: result.renewsAt })
-    toast.success('Subscription reactivated!')
+    const session = await billingService.createCheckoutSession({ planId: 'premium' })
+    window.location.assign(session.checkoutUrl)
   }
 
   const columns = [
     { key: 'id', header: 'Invoice' },
     { key: 'date', header: 'Date', render: (i) => formatDate(i.date) },
     { key: 'plan', header: 'Plan' },
-    { key: 'amount', header: 'Amount', render: (i) => `$${i.amount}.00` },
+    { key: 'amount', header: 'Amount', render: (i) => `Rs.${i.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}` },
     { key: 'status', header: 'Status', render: (i) => <Badge tone="success">{i.status}</Badge> },
     { key: 'actions', header: '', render: () => <button className="btn-icon" aria-label="Download invoice"><Download size={15} /></button> },
   ]
@@ -72,7 +71,7 @@ export default function Billing() {
 
         <Card>
           <p className="field-label mb-3">Payment method</p>
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-black/[0.035] border border-border-subtle">
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.035] border border-border-subtle">
             <CreditCard size={20} className="text-blue" />
             <div className="flex-1">
               <p className="text-sm text-text-secondary">•••• •••• •••• {card.number.slice(-4)}</p>
@@ -88,7 +87,7 @@ export default function Billing() {
         <DataTable columns={columns} data={invoices} renderMobileCard={(i) => (
           <Card>
             <div className="flex justify-between"><p className="text-sm text-text-primary">{i.id}</p><Badge tone="success">{i.status}</Badge></div>
-            <p className="text-xs text-text-muted mt-1">{formatDate(i.date)} · {i.plan} · ${i.amount}.00</p>
+            <p className="text-xs text-text-muted mt-1">{formatDate(i.date)} · {i.plan} · Rs.{i.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
           </Card>
         )} />
       )}

@@ -1,7 +1,7 @@
 export const ROLES = { USER: 'user', ADMIN: 'admin' }
 
 export function isAdmin(user) {
-  return user?.is_admin || user?.role === ROLES.ADMIN
+  return Boolean(user?.is_admin || user?.isAdmin || user?.role?.toLowerCase() === ROLES.ADMIN)
 }
 
 export function isAuthenticated(user) {
@@ -9,11 +9,13 @@ export function isAuthenticated(user) {
 }
 
 export function isPremium(user) {
-  return user?.plan === 'premium' || user?.plan === 'pro'
+  return user?.plan === 'basic' || user?.plan === 'premium' || user?.plan === 'pro'
 }
 
 export function canUseVideoInterview(user) {
-  return isPremium(user)
+  if (isPremium(user)) return true
+  const used = user?.usage?.videoInterviewsUsed ?? user?.usage?.videoInterviewsThisMonth ?? 0
+  return used < 2
 }
 
 export function canScanAnotherResume(user) {
