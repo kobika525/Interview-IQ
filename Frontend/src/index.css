@@ -199,6 +199,54 @@ body .bg-app {
     @apply text-text-secondary;
   }
 
+  .auth-neon-page {
+    background:
+      radial-gradient(circle at 12% 48%, rgba(182, 255, 59, 0.13), transparent 32%),
+      radial-gradient(circle at 88% 18%, rgba(137, 204, 22, 0.09), transparent 30%),
+      linear-gradient(135deg, var(--color-app) 0%, #0c0e0b 52%, #050605 100%);
+  }
+  .auth-neon-card {
+    @apply relative grid w-full overflow-hidden border border-blue/70 bg-auth-dark lg:grid-cols-[42%_58%];
+    box-shadow: 0 0 5px rgba(182, 255, 59, 0.7), 0 0 28px rgba(182, 255, 59, 0.2), 0 24px 75px rgba(0, 0, 0, 0.68);
+  }
+  .auth-neon-intro {
+    @apply relative flex min-h-[260px] flex-col overflow-hidden p-7 sm:p-10 lg:min-h-[590px] lg:p-12;
+    background: linear-gradient(145deg, #243912 0%, #17250d 54%, #0d1409 100%);
+  }
+  .auth-neon-intro::after {
+    content: '';
+    @apply pointer-events-none absolute inset-y-0 -right-px hidden w-[42%] bg-auth-dark lg:block;
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  }
+  .auth-neon-intro::before {
+    content: '';
+    @apply pointer-events-none absolute -left-24 top-8 h-64 w-64 rounded-full bg-blue/15 blur-3xl;
+  }
+  .auth-neon-form {
+    @apply bg-auth-dark px-6 py-8 sm:px-10 sm:py-10 lg:px-14 lg:py-14;
+  }
+  .auth-neon-fields .field {
+    @apply rounded-none border-0 border-b border-border bg-transparent px-0 py-2.5 text-text-primary placeholder:text-text-muted shadow-none hover:bg-transparent focus:border-blue focus:bg-transparent focus:ring-0;
+  }
+  .auth-neon-fields .field-label {
+    @apply mb-0.5 text-[11px] font-medium uppercase tracking-wider text-text-secondary;
+  }
+  .auth-neon-fields .field.pl-10 {
+    @apply pl-7;
+  }
+  .auth-neon-fields .field.pr-11 {
+    @apply pr-9;
+  }
+  .auth-neon-fields .auth-neon-button {
+    @apply mt-2 rounded-full border border-blue bg-gradient-to-r from-blue-deep to-blue py-3 font-bold text-[#080908] shadow-[0_0_18px_rgba(182,255,59,0.3)] transition-all hover:-translate-y-0.5 hover:shadow-[0_0_28px_rgba(182,255,59,0.5)];
+  }
+
+  @media (max-width: 1023px) {
+    .auth-neon-intro {
+      min-height: 250px;
+    }
+  }
+
   /* Badges */
   .badge {
     @apply inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full;

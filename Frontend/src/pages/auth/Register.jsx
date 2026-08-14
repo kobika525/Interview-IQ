@@ -74,7 +74,7 @@ export default function Register() {
           )}
         />
 
-        <Button type="submit" fullWidth loading={isSubmitting} className="!rounded-full !py-3">Create account</Button>
+        <Button type="submit" fullWidth loading={isSubmitting} className="auth-neon-button">Create account</Button>
       </form>
 
       <p className="text-sm text-text-secondary mt-6 text-center">
