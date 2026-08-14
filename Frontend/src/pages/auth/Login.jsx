@@ -41,9 +41,9 @@ export default function Login() {
 
   return (
     <div>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-        <Input type="email" placeholder="Email Address" className="!rounded-full !px-5" error={errors.email?.message} {...register('email')} />
-        <PasswordInput placeholder="Password" className="!rounded-full" error={errors.password?.message} {...register('password')} />
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+        <Input label="Email address" type="email" placeholder="you@email.com" error={errors.email?.message} {...register('email')} />
+        <PasswordInput label="Password" placeholder="Enter your password" error={errors.password?.message} {...register('password')} />
 
         {apiError && <p className="text-xs text-error bg-error/10 border border-error/20 rounded-lg px-3 py-2.5">{apiError}</p>}
 
@@ -52,7 +52,7 @@ export default function Login() {
           <Link to="/forgot-password" className="text-xs font-medium text-blue hover:text-cyan transition-colors">Forgot password?</Link>
         </div>
 
-        <Button type="submit" fullWidth loading={isSubmitting} className="!rounded-full !py-3">Login</Button>
+        <Button type="submit" fullWidth loading={isSubmitting} className="auth-neon-button">Login</Button>
       </form>
 
       <p className="text-sm text-text-secondary mt-6 text-center">
