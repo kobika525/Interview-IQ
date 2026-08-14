@@ -8,18 +8,20 @@ export function ThemeProvider({ children }) {
       const stored = localStorage.getItem('theme')
       if (stored) return stored
       if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark'
-    } catch (e) {}
+    } catch {}
     return 'light'
   })
 
   useEffect(() => {
-    try { localStorage.setItem('theme', theme) } catch (e) {}
+    try { localStorage.setItem('theme', theme) } catch {}
     // smooth transition helper
     document.documentElement.classList.add('theme-transition')
     window.setTimeout(() => document.documentElement.classList.remove('theme-transition'), 300)
 
-    if (theme === 'dark') document.documentElement.classList.add('dark')
-    else document.documentElement.classList.remove('dark')
+    document.documentElement.classList.toggle('dark', theme === 'dark')
+    document.documentElement.classList.toggle('light', theme === 'light')
+    document.documentElement.dataset.theme = theme
+    document.documentElement.style.colorScheme = theme
   }, [theme])
 
   const toggle = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))

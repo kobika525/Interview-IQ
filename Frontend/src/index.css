@@ -49,11 +49,40 @@
   --color-success: #AEEA3A;
   --color-warning: #F59E0B;
   --color-error: #EF4444;
-  --color-info: #38BDF8;
+  --color-info: #89CC16;
+}
+
+html.light {
+  --color-auth-bg: #f4f7ef;
+  --color-auth-decor: #e9efdf;
+  --color-auth-dark: #e4eadb;
+
+  --color-app: #f5f7f2;
+  --color-app-2: #eef2e9;
+  --color-sidebar: #ffffff;
+  --color-topnav: #ffffff;
+
+  --color-card: #ffffff;
+  --color-card-2: #f7f9f4;
+  --color-card-elevated: #ffffff;
+
+  --color-input: #f5f7f2;
+  --color-input-hover: #eef2e9;
+
+  --color-border: #ccd4c5;
+  --color-border-subtle: #e1e6dc;
+
+  --color-text-primary: #141912;
+  --color-text-secondary: #465042;
+  --color-text-muted: #717b6c;
+  --color-text-disabled: #a0a89b;
+
+  --color-blue-deep: #6ea80e;
+  --color-button-green-soft: #edf8dc;
 }
 
 body {
-  background-color: #080908;
+  background-color: var(--color-app);
   background-image:
     linear-gradient(rgba(182, 255, 59, 0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(182, 255, 59, 0.025) 1px, transparent 1px),
@@ -62,6 +91,20 @@ body {
   background-attachment: fixed;
   color: var(--color-text-primary);
   font-family: var(--font-sans);
+}
+
+html.light body {
+  background-image:
+    linear-gradient(rgba(80, 110, 35, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(80, 110, 35, 0.045) 1px, transparent 1px),
+    radial-gradient(circle at 50% 0%, rgba(182, 255, 59, 0.12), transparent 38%);
+}
+
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition-property: color, background-color, border-color, box-shadow !important;
+  transition-duration: 220ms !important;
 }
 
 body .bg-app {
@@ -136,6 +179,17 @@ body .bg-app {
   }
   .themed-select option {
     padding: 10px 12px;
+  }
+  html.light .themed-select {
+    color-scheme: light;
+  }
+  .themed-select option:checked,
+  .themed-select option:focus,
+  .themed-select option:hover {
+    color: #080908;
+    background-color: var(--color-button-green);
+    background-image: linear-gradient(var(--color-button-green), var(--color-button-green));
+    box-shadow: 0 0 0 100vmax var(--color-button-green) inset;
   }
   .auth-form-theme .field {
     @apply rounded-full bg-input border-border px-5 text-text-primary placeholder:text-text-muted

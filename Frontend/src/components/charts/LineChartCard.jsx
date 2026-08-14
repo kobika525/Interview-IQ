@@ -3,7 +3,7 @@ import ChartCard from '../common/ChartCard'
 
 const COLORS = {
   overall: '#B6FF3B', technical: '#D3FF73', communication: '#8FC52B',
-  grammar: '#9B7BFF', confidence: '#FFB547',
+  grammar: '#6D9E1B', confidence: '#FFB547',
 }
 
 export default function LineChartCard({ title, subtitle, data, lines, height = 260 }) {
@@ -11,11 +11,11 @@ export default function LineChartCard({ title, subtitle, data, lines, height = 2
     <ChartCard title={title} subtitle={subtitle}>
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-          <CartesianGrid stroke="#202A3D" strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="label" tick={{ fill: '#8792AA', fontSize: 11 }} axisLine={{ stroke: '#273149' }} tickLine={false} />
-          <YAxis tick={{ fill: '#8792AA', fontSize: 11 }} axisLine={false} tickLine={false} />
-          <Tooltip contentStyle={{ background: '#151D2E', border: '1px solid #273149', borderRadius: 10, fontSize: 12 }} />
-          {lines.length > 1 && <Legend wrapperStyle={{ fontSize: 11, color: '#8792AA' }} />}
+          <CartesianGrid stroke="#20241F" strokeDasharray="3 3" vertical={false} />
+          <XAxis dataKey="label" tick={{ fill: '#899184', fontSize: 11 }} axisLine={{ stroke: '#2B3028' }} tickLine={false} />
+          <YAxis tick={{ fill: '#899184', fontSize: 11 }} axisLine={false} tickLine={false} />
+          <Tooltip contentStyle={{ background: '#151815', border: '1px solid #2B3028', borderRadius: 10, fontSize: 12 }} />
+          {lines.length > 1 && <Legend wrapperStyle={{ fontSize: 11, color: '#899184' }} />}
           {lines.map((key) => (
             <Line key={key} type="monotone" dataKey={key} stroke={COLORS[key] || '#B6FF3B'} strokeWidth={2.5} dot={false} />
           ))}

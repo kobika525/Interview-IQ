@@ -10,6 +10,7 @@ import PasswordInput from '../../components/common/PasswordInput'
 import Button from '../../components/common/Button'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import { DIFFICULTY_LEVELS } from '../../utils/constants'
+import { useTheme } from '../../context/ThemeContext'
 
 const TABS = [
   { value: 'general', label: 'General' },
@@ -20,10 +21,11 @@ const TABS = [
 ]
 
 export default function Settings() {
+  const { theme, setTheme } = useTheme()
   const [tab, setTab] = useState('general')
   const [notif, setNotif] = useState({ email: true, interviewReminders: true, resumeNotifications: true, progressNotifications: false })
   const [privacy, setPrivacy] = useState({ resumeVisible: false, historyVisible: true })
-  const [appearance, setAppearance] = useState({ darkMode: true, compact: false, reducedMotion: false })
+  const [appearance, setAppearance] = useState({ compact: false, reducedMotion: false })
   const [deleteOpen, setDeleteOpen] = useState(false)
 
   return (
@@ -81,7 +83,7 @@ export default function Settings() {
 
       {tab === 'appearance' && (
         <Card className="max-w-xl space-y-5">
-          <Switch label="Dark mode" checked={appearance.darkMode} onChange={() => setAppearance((a) => ({ ...a, darkMode: !a.darkMode }))} />
+          <Switch label="Dark mode" checked={theme === 'dark'} onChange={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />
           <Switch label="Compact mode" checked={appearance.compact} onChange={() => setAppearance((a) => ({ ...a, compact: !a.compact }))} />
           <Switch label="Reduced motion" checked={appearance.reducedMotion} onChange={() => setAppearance((a) => ({ ...a, reducedMotion: !a.reducedMotion }))} />
           <p className="text-xs text-text-muted">Interview IQ is designed dark-mode-first for a focused, premium interview-prep experience.</p>

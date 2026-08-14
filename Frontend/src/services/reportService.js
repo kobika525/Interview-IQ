@@ -66,6 +66,21 @@ export async function downloadInterviewReport(reportId) {
     timeout: 60000,
   })
 
+  const contentType = response.headers['content-type'] || response.data?.type || ''
+  if (!response.data || response.data.size === 0) {
+    throw new Error('The server returned an empty PDF report.')
+  }
+  if (!contentType.toLowerCase().includes('application/pdf')) {
+    let message = 'The server did not return a valid PDF report.'
+    try {
+      const payload = JSON.parse(await response.data.text())
+      message = payload.message || payload.detail || message
+    } catch {
+      // Keep the fallback when the response is not JSON.
+    }
+    throw new Error(message)
+  }
+
   const disposition = response.headers['content-disposition'] || ''
   const encodedFilename = disposition.match(/filename\*=UTF-8''([^;]+)/i)?.[1]
   const plainFilename = disposition.match(/filename="?([^";]+)"?/i)?.[1]
@@ -80,5 +95,5 @@ export async function downloadInterviewReport(reportId) {
   document.body.appendChild(link)
   link.click()
   link.remove()
-  URL.revokeObjectURL(url)
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
