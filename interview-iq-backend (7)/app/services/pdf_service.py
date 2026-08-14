@@ -2,6 +2,7 @@
 external binary dependency)."""
 
 import os
+from xml.sax.saxutils import escape
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -15,6 +16,18 @@ styles = getSampleStyleSheet()
 TITLE_STYLE = ParagraphStyle("TitleStyle", parent=styles["Title"], textColor=colors.HexColor("#1E2438"))
 HEADING_STYLE = ParagraphStyle("HeadingStyle", parent=styles["Heading2"], textColor=colors.HexColor("#1EA7FF"))
 BODY_STYLE = styles["BodyText"]
+
+
+def _safe_text(value, fallback: str = "Unavailable") -> str:
+    """Return ReportLab-safe text for nullable, AI-generated content."""
+    if value is None:
+        return fallback
+    text = str(value).strip()
+    return escape(text) if text else fallback
+
+
+def _safe_list(value) -> list:
+    return value if isinstance(value, (list, tuple)) else []
 
 
 def _display_metric(value, suffix: str = "") -> str:
@@ -34,9 +47,9 @@ def generate_interview_report_pdf(report: dict, question_breakdown: list[dict]) 
     story = [
         Paragraph("Interview IQ — Interview Report", TITLE_STYLE),
         Spacer(1, 12),
-        Paragraph(f"Overall score: {report['overall_score']} / 100 ({report['performance_label']})", HEADING_STYLE),
+        Paragraph(f"Overall score: {_safe_text(report.get('overall_score'))} / 100 ({_safe_text(report.get('performance_label'))})", HEADING_STYLE),
         Spacer(1, 8),
-        Paragraph(report["executive_summary"], BODY_STYLE),
+        Paragraph(_safe_text(report.get("executive_summary"), "No executive summary is available."), BODY_STYLE),
         Spacer(1, 14),
     ]
 
@@ -128,25 +141,28 @@ def generate_interview_report_pdf(report: dict, question_breakdown: list[dict]) 
             ("FONTSIZE", (0, 0), (-1, -1), 9),
         ]))
         story.extend([visual_table, Spacer(1, 8)])
-        for guidance in visual.get("camera_framing_guidance", []):
-            story.append(Paragraph(f"&#8226; {guidance}", BODY_STYLE))
+        for guidance in _safe_list(visual.get("camera_framing_guidance")):
+            story.append(Paragraph(f"&#8226; {_safe_text(guidance)}", BODY_STYLE))
         if visual.get("lighting_recommendation"):
-            story.append(Paragraph(visual["lighting_recommendation"], BODY_STYLE))
+            story.append(Paragraph(_safe_text(visual["lighting_recommendation"]), BODY_STYLE))
         story.extend([
             Spacer(1, 6),
-            Paragraph(visual.get("visual_presentation_disclaimer") or
-                      "This score evaluates visible interview-presentation conditions and does not measure personality, emotion, honesty, or hiring suitability.",
+            Paragraph(_safe_text(
+                      visual.get("visual_presentation_disclaimer"),
+                      "This score evaluates visible interview-presentation conditions and does not measure personality, emotion, honesty, or hiring suitability."),
                       ParagraphStyle("VisualDisclaimer", parent=BODY_STYLE, fontSize=8, textColor=colors.grey)),
             Spacer(1, 16),
         ])
 
     story.append(Paragraph("Strengths", HEADING_STYLE))
-    for s in report["strengths"]:
+    for s in _safe_list(report.get("strengths")):
+        s = _safe_text(s)
         story.append(Paragraph(f"• {s}", BODY_STYLE))
     story.append(Spacer(1, 10))
 
     story.append(Paragraph("Growth Areas", HEADING_STYLE))
-    for g in report["growth_areas"]:
+    for g in _safe_list(report.get("growth_areas")):
+        g = _safe_text(g)
         story.append(Paragraph(f"• {g}", BODY_STYLE))
     story.append(Spacer(1, 10))
 
@@ -156,29 +172,34 @@ def generate_interview_report_pdf(report: dict, question_breakdown: list[dict]) 
     ):
         if report.get(key):
             story.append(Paragraph(title, HEADING_STYLE))
-            for item in report[key]:
+            for item in _safe_list(report.get(key)):
+                item = _safe_text(item)
                 story.append(Paragraph(f"• {item}", BODY_STYLE))
             story.append(Spacer(1, 10))
 
     if report.get("improved_answers"):
         story.append(Paragraph("Improved Answers", HEADING_STYLE))
-        for index, answer in enumerate(report["improved_answers"], start=1):
+        for index, answer in enumerate(_safe_list(report.get("improved_answers")), start=1):
+            answer = _safe_text(answer)
             story.append(Paragraph(f"{index}. {answer}", BODY_STYLE))
         story.append(Spacer(1, 10))
 
     if report.get("hiring_recommendation"):
         story.append(Paragraph("Mock Interview Readiness", HEADING_STYLE))
-        story.append(Paragraph(report["hiring_recommendation"], BODY_STYLE))
+        story.append(Paragraph(_safe_text(report["hiring_recommendation"]), BODY_STYLE))
         story.append(Spacer(1, 10))
 
     story.append(Paragraph("Question-by-Question Feedback", HEADING_STYLE))
-    for i, item in enumerate(question_breakdown, start=1):
-        story.append(Paragraph(f"<b>Q{i}: {item['question']}</b>", BODY_STYLE))
-        story.append(Paragraph(f"Score: {item['score']}/100 — {item['feedback']}", BODY_STYLE))
+    for i, item in enumerate(question_breakdown or [], start=1):
+        story.append(Paragraph(f"<b>Q{i}: {_safe_text(item.get('question'))}</b>", BODY_STYLE))
+        story.append(Paragraph(f"Score: {_safe_text(item.get('score'))}/100 — {_safe_text(item.get('feedback'))}", BODY_STYLE))
         story.append(Spacer(1, 6))
 
     story.append(Spacer(1, 14))
-    story.append(Paragraph(report["model_disclaimer"], ParagraphStyle("Disclaimer", parent=BODY_STYLE, fontSize=8, textColor=colors.grey)))
+    story.append(Paragraph(
+        _safe_text(report.get("model_disclaimer"), "AI-generated guidance should be reviewed alongside your own judgment."),
+        ParagraphStyle("Disclaimer", parent=BODY_STYLE, fontSize=8, textColor=colors.grey),
+    ))
 
     doc.build(story)
     return path

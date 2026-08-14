@@ -12,8 +12,10 @@ import EmptyState from '../../components/common/EmptyState'
 import SkeletonLoader from '../../components/common/SkeletonLoader'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import * as interviewService from '../../services/interviewService'
+import * as reportService from '../../services/reportService'
 import { INTERVIEW_MODES, DIFFICULTY_LEVELS } from '../../utils/constants'
 import { formatDate, scoreTone } from '../../utils/formatters'
+import toast from 'react-hot-toast'
 
 export default function InterviewHistory() {
   const [items, setItems] = useState([])
@@ -22,6 +24,7 @@ export default function InterviewHistory() {
   const [mode, setMode] = useState('')
   const [difficulty, setDifficulty] = useState('')
   const [toDelete, setToDelete] = useState(null)
+  const [downloadingId, setDownloadingId] = useState(null)
 
   useEffect(() => { interviewService.getInterviewHistory().then((d) => { setItems(d); setLoading(false) }) }, [])
 
@@ -30,6 +33,22 @@ export default function InterviewHistory() {
     (!mode || h.mode === mode) &&
     (!difficulty || h.difficulty === difficulty)
   )
+
+  async function downloadReport(item) {
+    if (!item.reportId) {
+      toast.error('This interview does not have a completed report yet.')
+      return
+    }
+    setDownloadingId(item.id)
+    try {
+      await reportService.downloadInterviewReport(item.reportId)
+      toast.success('PDF downloaded successfully.')
+    } catch (error) {
+      toast.error(error.message || 'Unable to download this interview report.')
+    } finally {
+      setDownloadingId(null)
+    }
+  }
 
   const columns = [
     { key: 'role', header: 'Role', render: (r) => <span className="text-text-primary font-medium">{r.role}</span> },
@@ -45,7 +64,11 @@ export default function InterviewHistory() {
         <div className="flex gap-1.5">
           {r.hasReport && <Link to={`/app/interviews/report/${r.id}`}><button className="btn-icon" aria-label="View report"><Eye size={15} /></button></Link>}
           <Link to="/app/interviews/setup"><button className="btn-icon" aria-label="Retake"><RotateCcw size={15} /></button></Link>
-          <button className="btn-icon" aria-label="Download"><Download size={15} /></button>
+          {r.hasReport && (
+            <button className="btn-icon" aria-label="Download report" title="Download PDF" disabled={downloadingId === r.id} onClick={() => downloadReport(r)}>
+              <Download size={15} className={downloadingId === r.id ? 'animate-bounce' : ''} />
+            </button>
+          )}
           <button className="btn-icon" aria-label="Delete" onClick={() => setToDelete(r)}><Trash2 size={15} /></button>
         </div>
       ),
@@ -77,6 +100,7 @@ export default function InterviewHistory() {
               <p className="text-xs text-text-muted mt-1 capitalize">{r.type} · {r.mode} · {r.difficulty} · {formatDate(r.date)}</p>
               <div className="flex gap-2 mt-3">
                 {r.hasReport && <Link to={`/app/interviews/report/${r.id}`} className="flex-1"><Button variant="outline" fullWidth className="!text-xs !py-1.5">View report</Button></Link>}
+                {r.hasReport && <Button variant="ghost" className="!text-xs !py-1.5" loading={downloadingId === r.id} icon={Download} onClick={() => downloadReport(r)}>PDF</Button>}
                 <Button variant="ghost" className="!text-xs !py-1.5" onClick={() => setToDelete(r)}><Trash2 size={13} /></Button>
               </div>
             </Card>

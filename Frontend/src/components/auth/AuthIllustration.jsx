@@ -27,7 +27,7 @@ export default function AuthIllustration() {
             className="absolute inset-6 rounded-full border border-cyan/25 border-dashed"
           />
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue to-cyan rotate-45 animate-pulse-glow shadow-[0_0_60px_rgba(0,213,255,0.45)]" />
+            <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue to-cyan rotate-45 animate-pulse-glow shadow-[0_0_60px_rgba(182,255,59,0.38)]" />
           </div>
           <div className="absolute inset-0 flex items-center justify-center">
             <Mic size={30} className="text-text-primary" />

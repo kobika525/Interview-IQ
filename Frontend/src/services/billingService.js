@@ -1,15 +1,54 @@
 import api from './axios'
 import { items, unwrap } from './apiUtils'
 
+const PLAN_PRESENTATION = {
+  free: {
+    tagline: 'Get started with the basics.',
+    features: [
+      '3 resume scans per month',
+      '5 text and 3 voice interviews',
+      '2 video interviews',
+      'Career roadmap access',
+      '1 saved interview report',
+    ],
+  },
+  basic: {
+    tagline: 'Full interview preparation, unlocked.',
+    highlight: true,
+    features: [
+      'Unlimited resume scans',
+      'Unlimited text and voice interviews',
+      'Unlimited video interviews',
+      'Full interview report history',
+      'Premium learning resources',
+      'Career roadmap access',
+    ],
+  },
+  pro: {
+    tagline: 'For serious, fast-track preparation.',
+    features: [
+      'Everything included in Basic',
+      'Advanced video delivery analysis',
+      'Personalised coaching roadmap',
+      'Full interview report history',
+      'Premium learning resources',
+      'Priority access to new features',
+    ],
+  },
+}
+
 function normalizePlan(plan) {
   const code = String(plan.code || '').toLowerCase()
+  const presentation = PLAN_PRESENTATION[code] || {}
   return {
     ...plan,
     id: code,
     name: plan.name || `${code[0]?.toUpperCase() || ''}${code.slice(1)}`,
     price: Number(plan.priceMonthly ?? plan.monthlyPrice ?? 0),
     annualPrice: Number(plan.priceYearly ?? plan.annualPrice ?? 0),
-    features: plan.features || [],
+    tagline: plan.tagline || presentation.tagline || '',
+    highlight: plan.highlight ?? presentation.highlight ?? false,
+    features: plan.features?.length ? plan.features : (presentation.features || []),
   }
 }
 

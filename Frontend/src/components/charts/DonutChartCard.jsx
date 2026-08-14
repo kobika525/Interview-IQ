@@ -11,8 +11,8 @@ export default function DonutChartCard({ title, subtitle, data, height = 240 }) 
           <Pie data={data} dataKey="value" nameKey="name" innerRadius={55} outerRadius={85} paddingAngle={3}>
             {data.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
           </Pie>
-          <Tooltip contentStyle={{ background: '#151D2E', border: '1px solid #273149', borderRadius: 10, fontSize: 12 }} />
-          <Legend wrapperStyle={{ fontSize: 11, color: '#8792AA' }} />
+          <Tooltip contentStyle={{ background: '#151815', border: '1px solid #2B3028', borderRadius: 10, fontSize: 12 }} />
+          <Legend wrapperStyle={{ fontSize: 11, color: '#899184' }} />
         </PieChart>
       </ResponsiveContainer>
     </ChartCard>

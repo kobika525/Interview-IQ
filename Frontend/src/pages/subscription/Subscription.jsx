@@ -15,11 +15,13 @@ import { isPremium, canUseVideoInterview } from '../../utils/permissions'
 import { FREE_RESUME_SCAN_LIMIT } from '../../utils/constants'
 import * as billingService from '../../services/billingService'
 import { formatDate } from '../../utils/formatters'
+import { cx } from '../../utils/helpers'
 
 export default function Subscription() {
   const { user, updateUser } = useAuth()
   const navigate = useNavigate()
   const [plans, setPlans] = useState([])
+  const [billingCycle, setBillingCycle] = useState('month')
   const [cancelOpen, setCancelOpen] = useState(false)
   const [cancelling, setCancelling] = useState(false)
 
@@ -78,10 +80,41 @@ export default function Subscription() {
         {!canUseVideoInterview(user) && <Button variant="outline" className="!text-xs !py-2" onClick={() => navigate('/pricing')}>Unlock</Button>}
       </Card>
 
-      <h3 className="font-display font-semibold text-text-primary mb-3">Compare plans</h3>
+      <div className="mb-8 mt-10 text-center">
+        <h3 className="font-display text-2xl font-bold text-text-primary">Choose the plan that fits you</h3>
+        <p className="mt-2 text-sm text-text-muted">Upgrade your preparation with more practice, analysis, and guidance.</p>
+
+        <div className="mt-6 inline-flex flex-col items-center">
+          <div className="inline-flex rounded-full border border-border bg-card p-1 text-xs shadow-sm">
+            <button
+              type="button"
+              onClick={() => setBillingCycle('month')}
+              className={cx('rounded-full px-5 py-2 font-semibold transition-colors', billingCycle === 'month' ? 'bg-button-green text-black' : 'text-text-muted hover:text-text-primary')}
+            >
+              Monthly
+            </button>
+            <button
+              type="button"
+              onClick={() => setBillingCycle('year')}
+              className={cx('rounded-full px-5 py-2 font-semibold transition-colors', billingCycle === 'year' ? 'bg-button-green text-black' : 'text-text-muted hover:text-text-primary')}
+            >
+              Annually
+            </button>
+          </div>
+          <p className="mt-2 text-[11px] text-text-muted">Annually you save two months free <span className="text-button-green">●</span></p>
+        </div>
+      </div>
       {plans.length === 0 ? <SkeletonLoader rows={2} /> : (
-        <div className="grid md:grid-cols-3 gap-6 pt-3">
-          {plans.map((p) => <PricingCard key={p.id} plan={p} currentPlan={user?.plan} />)}
+        <div className="mx-auto grid max-w-6xl items-stretch gap-6 md:grid-cols-3 lg:gap-8">
+          {plans.map((p) => (
+            <PricingCard
+              key={p.id}
+              plan={p}
+              currentPlan={user?.plan}
+              billingCycle={billingCycle}
+              layout="subscription"
+            />
+          ))}
         </div>
       )}
 

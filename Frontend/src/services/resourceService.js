@@ -35,25 +35,37 @@ export async function completeResource(resourceId) {
 export async function getRoadmap() {
   const roadmaps = items(await api.get('/roadmaps'))
   const roadmap = roadmaps[0]
-  if (!roadmap) {
-    return { targetCareer: 'your target career', readiness: 0, estimatedDuration: 'Not generated', completion: 0, stages: [] }
-  }
+  if (!roadmap) return null
+
   const grouped = Object.values((roadmap.items || []).reduce((stages, item) => {
     const stageNumber = Math.max(1, Math.ceil((item.orderNumber || 1) / 4))
     stages[stageNumber] ||= {
       id: stageNumber,
       title: `Stage ${stageNumber}`,
       weekLabel: `Weeks ${(stageNumber - 1) * 2 + 1}-${stageNumber * 2}`,
-      status: 'current',
       tasks: [],
     }
-    stages[stageNumber].tasks.push({ id: item.id, title: item.title, done: item.isCompleted })
+    stages[stageNumber].tasks.push({
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      resourceId: item.resourceId,
+      type: item.itemType,
+      done: item.isCompleted,
+    })
     return stages
   }, {}))
+
+  const firstIncomplete = grouped.findIndex((stage) => stage.tasks.some((task) => !task.done))
+  grouped.forEach((stage, index) => {
+    if (stage.tasks.every((task) => task.done)) stage.status = 'completed'
+    else if (index === firstIncomplete) stage.status = 'current'
+    else stage.status = 'locked'
+  })
+
   return {
     id: roadmap.id,
-    targetCareer: roadmap.title,
-    readiness: Math.round(roadmap.completionPercentage || 0),
+    targetCareer: roadmap.title.replace(/\s+Learning Roadmap$/i, ''),
     estimatedDuration: `${roadmap.estimatedDurationWeeks} weeks`,
     completion: Math.round(roadmap.completionPercentage || 0),
     stages: grouped,

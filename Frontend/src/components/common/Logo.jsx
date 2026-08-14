@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 
-const logoMark = '/interview-iq-logo.jpg'
+const logoMark = '/interview-iq-brand.png'
 
 const SIZES = { sm: 30, md: 36, lg: 48 }
 
@@ -12,15 +12,15 @@ export default function Logo({ size = 'md', withText = true, to = '/', textClass
   const content = (
     <div className="flex items-center gap-2.5">
       <span
-        className="rounded-lg bg-[#101110] flex items-center justify-center overflow-hidden shrink-0 shadow-[0_0_0_1px_rgba(214,178,91,0.24)]"
-        style={{ width: Math.round(px * 1.45), height: px }}
+        className="group/logo flex shrink-0 items-center justify-center"
+        style={{ width: px, height: px }}
       >
         <img
           src={logoMark}
           alt="Interview IQ logo"
-          width={Math.round(px * 1.45)}
+          width={px}
           height={px}
-          className="w-full h-full object-cover"
+          className="h-full w-full object-contain drop-shadow-[0_0_8px_rgba(182,255,59,0.22)] transition-transform duration-200 group-hover/logo:scale-105"
         />
       </span>
       {withText && (

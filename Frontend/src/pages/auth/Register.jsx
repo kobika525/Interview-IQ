@@ -48,7 +48,7 @@ export default function Register() {
     <div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         <div className="grid sm:grid-cols-2 gap-4">
-          <Input label="Full name" icon={UserIcon} placeholder="Jane Doe" error={errors.fullName?.message} {...register('fullName')} />
+          <Input label="Full name" icon={UserIcon} placeholder="Your name" error={errors.fullName?.message} {...register('fullName')} />
           <Input label="Email address" icon={Mail} type="email" placeholder="you@email.com" error={errors.email?.message} {...register('email')} />
         </div>
         <Select label="Current study level" options={STUDY_LEVELS} error={errors.studyLevel?.message} {...register('studyLevel')} />

@@ -11,9 +11,9 @@ export default function App() {
         <Toaster
           position="top-right"
           toastOptions={{
-            style: { background: '#151D2E', color: '#FFFFFF', border: '1px solid #273149', fontSize: '13px' },
-            success: { iconTheme: { primary: '#AEEA3A', secondary: '#151D2E' } },
-            error: { iconTheme: { primary: '#EF4444', secondary: '#151D2E' } },
+            style: { background: 'var(--color-card-elevated)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)', fontSize: '13px' },
+            success: { iconTheme: { primary: '#AEEA3A', secondary: 'var(--color-card-elevated)' } },
+            error: { iconTheme: { primary: '#EF4444', secondary: 'var(--color-card-elevated)' } },
           }}
         />
       </BrowserRouter>

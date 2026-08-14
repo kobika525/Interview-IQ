@@ -20,7 +20,7 @@ export default function PublicNavbar() {
   const { user } = useAuth()
 
   return (
-    <header className="sticky top-0 z-40 bg-slate-950 text-white border-b border-slate-800 shadow-[0_24px_80px_-52px_rgba(15,23,42,0.75)]">
+    <header className="sticky top-0 z-40 bg-[#080908] text-white border-b border-[#20241f] shadow-[0_24px_80px_-52px_rgba(8,9,8,0.82)]">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 h-20">
         <Logo size="sm" to="/" textClassName="text-white" />
 
